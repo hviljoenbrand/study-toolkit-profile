@@ -156,6 +156,29 @@
     <div class="consent">
       <p class="consenthead">For parents and guardians</p>
       <label class="consentrow"><input type="checkbox" id="inConsent"><span>I have read the <a href="#" onclick="openNotice();return false;">privacy notice</a>, and a parent or guardian has given permission for this assessment to be completed.</span></label>
+      <div id="noticeInline" style="display:none;margin:10px 0 4px;padding:14px 16px;border:1px solid #cfd2e0;border-radius:10px;background:#fff;max-height:320px;overflow:auto;">
+        <h2 style="margin-top:0;">Privacy notice</h2>
+    <h3>Who we are</h3>
+    <p>The Study Toolkit Profile is provided by Study Toolbox. You can reach us at info@studytools.co.za or at www.studytools.co.za. For the purposes of South Africa's Protection of Personal Information Act (POPIA), Study Toolbox is the responsible party for your information.</p>
+    <h3>What we collect</h3>
+    <p>When you complete the profile, we collect your first name, surname, school, grade, the date you complete it, the answers you give, and a parent or guardian's email address. Your answers are used to work out your study profile, which includes a few indicators about wellbeing, such as sleep and managing stress.</p>
+    <h3>Why we collect it</h3>
+    <p>We use this information to create your study profile and show it to you on screen, to keep a copy so we can have a record and improve the assessment over time, and, where a counsellor or teacher is running the assessment with you, to share your profile with them. We do not sell your information, and we do not share it with any outside party for their own purposes.</p>
+    <h3>Where it is kept</h3>
+    <p>Your information is stored securely in the cloud, using a trusted service that holds it on our behalf and only on our instructions. That service may store it on servers outside South Africa, with appropriate safeguards in place. Only Study Toolbox can read it.</p>
+    <h3>Who can see it</h3>
+    <p>Only Study Toolbox, and, where relevant, the counsellor or teacher running the assessment with you. No one else.</p>
+    <h3>How long we keep it</h3>
+    <p>We keep your information for 12 months, and then delete it. You can ask us to delete it sooner.</p>
+    <h3>Permission for under-18s</h3>
+    <p>Most learners completing this are under 18. For that reason, a parent or guardian must give permission before the assessment is completed.</p>
+    <h3>Your rights</h3>
+    <p>You can ask us what information we hold about you, ask us to correct it, or ask us to delete it, and you can object to how we use it. Just email info@studytools.co.za. If you are not satisfied, you may also contact the Information Regulator of South Africa.</p>
+    <h3>Marketing</h3>
+    <p>We will not use the parent or guardian's email to send you marketing unless they have separately chosen to receive it.</p>
+    <p class="noticeupd">Last updated: June 2026</p>
+        <button class="btn ghost" onclick="closeNotice()" style="margin-top:8px;">Close</button>
+      </div>
     </div>
     <p id="introWarn" class="warn" style="display:none;">Please add your name, email, school and grade before submitting.</p>
   </div>
@@ -180,38 +203,13 @@
 
 </div>
 
-<div id="noticeOverlay" class="noticeoverlay" onclick="if(event.target===this)closeNotice()">
-  <div class="noticebox">
-    <button class="noticeclose" onclick="closeNotice()" aria-label="Close">&times;</button>
-    <h2>Privacy notice</h2>
-    <h3>Who we are</h3>
-    <p>The Study Toolkit Profile is provided by Study Toolbox. You can reach us at info@studytools.co.za or at www.studytools.co.za. For the purposes of South Africa's Protection of Personal Information Act (POPIA), Study Toolbox is the responsible party for your information.</p>
-    <h3>What we collect</h3>
-    <p>When you complete the profile, we collect your first name, surname, school, grade, the date you complete it, the answers you give, and a parent or guardian's email address. Your answers are used to work out your study profile, which includes a few indicators about wellbeing, such as sleep and managing stress.</p>
-    <h3>Why we collect it</h3>
-    <p>We use this information to create your study profile and show it to you on screen, to keep a copy so we can have a record and improve the assessment over time, and, where a counsellor or teacher is running the assessment with you, to share your profile with them. We do not sell your information, and we do not share it with any outside party for their own purposes.</p>
-    <h3>Where it is kept</h3>
-    <p>Your information is stored securely in the cloud, using a trusted service that holds it on our behalf and only on our instructions. That service may store it on servers outside South Africa, with appropriate safeguards in place. Only Study Toolbox can read it.</p>
-    <h3>Who can see it</h3>
-    <p>Only Study Toolbox, and, where relevant, the counsellor or teacher running the assessment with you. No one else.</p>
-    <h3>How long we keep it</h3>
-    <p>We keep your information for 12 months, and then delete it. You can ask us to delete it sooner.</p>
-    <h3>Permission for under-18s</h3>
-    <p>Most learners completing this are under 18. For that reason, a parent or guardian must give permission before the assessment is completed.</p>
-    <h3>Your rights</h3>
-    <p>You can ask us what information we hold about you, ask us to correct it, or ask us to delete it, and you can object to how we use it. Just email info@studytools.co.za. If you are not satisfied, you may also contact the Information Regulator of South Africa.</p>
-    <h3>Marketing</h3>
-    <p>We will not use the parent or guardian's email to send you marketing unless they have separately chosen to receive it.</p>
-    <p class="noticeupd">Last updated: June 2026</p>
-    <button class="btn ghost" onclick="closeNotice()">Close</button>
-  </div>
-</div>
+
 
 <script>
 const SCALE = ["Rarely","Sometimes","Often","Almost always"];
 function stpScrollParentTop(){ try{ if(window.parent && window.parent!==window){ window.parent.postMessage({studyToolkitProfileScrollTop:true},"*"); } }catch(e){} }
-function openNotice(){ document.getElementById("noticeOverlay").classList.add("open"); stpScrollParentTop(); }
-function closeNotice(){ document.getElementById("noticeOverlay").classList.remove("open"); }
+function openNotice(){ var n=document.getElementById("noticeInline"); if(n){ n.style.display="block"; } }
+function closeNotice(){ var n=document.getElementById("noticeInline"); if(n){ n.style.display="none"; } }
 
 // facet display names
 const FN = { gs:"Getting started", ft:"Following through", org:"Organising",
