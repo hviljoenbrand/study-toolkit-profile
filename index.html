@@ -127,7 +127,12 @@
     .trk i, .trk{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     .block, .floor{ page-break-inside:avoid; }
   }
+
+  /* When embedded in another page (iframe), the submit bar must not hover,
+     otherwise the frame mis-measures its height and leaves a long blank strip. */
+  html.embedded .bar-sticky{ position:static; background:none; padding-top:6px; }
 </style>
+<script>if (window.self !== window.top) { document.documentElement.classList.add('embedded'); }</script>
 </head>
 <body>
 <div class="wrap">
@@ -792,28 +797,28 @@ function restart(){
 buildQuiz();
 </script>
 <script>
-/* Auto-resize helper: tells the parent page how tall the profile is,
-   so the iframe on the Shopify side can grow to fit with no inner scrollbar.
-   Harmless if the page is opened on its own (not inside a frame). */
 (function(){
+  function contentHeight(){
+    var wrap = document.querySelector('.wrap');
+    if (wrap){
+      var r = wrap.getBoundingClientRect();
+      return Math.ceil(r.bottom + (window.scrollY || window.pageYOffset || 0));
+    }
+    return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+  }
   function postHeight(){
     try{
-      var h = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight
-      );
       if (window.parent && window.parent !== window){
-        window.parent.postMessage({ studyToolkitProfileHeight: h }, "*");
+        window.parent.postMessage({ studyToolkitProfileHeight: contentHeight() }, "*");
       }
     }catch(e){}
   }
   window.addEventListener("load", postHeight);
   window.addEventListener("resize", postHeight);
-  // catch content changes (answering questions, showing the report)
   if (window.MutationObserver){
     new MutationObserver(postHeight).observe(document.body, {subtree:true, childList:true, attributes:true});
   }
-  setInterval(postHeight, 1200); // gentle safety net
+  setInterval(postHeight, 1000);
 })();
 </script>
 </body>
