@@ -280,10 +280,10 @@ const PAIRS = { gs:[[1,2],3], ft:[[4,5],6], org:[[7,8],9], pt:[[15,16],17], ms:[
 const MEANS = {
  gs:{ strength:"When you sit down to work, you get going, and that is a real strength. You don't wait for the perfect moment or let a dull task drift. You start, even when you'd rather not. Beginning is the hardest part for most people, so having this one settled means your energy goes into the actual work instead of the battle to start. Keep protecting it.",
   developing:"You can get started, and you often do, but it depends on the day, the subject, or how the task feels. When work looks boring or hard, beginning it is where things sometimes stall. This is a skill you're still building, and one of the most useful to build, because every study session has to clear this first hurdle. The more reliably you can begin, the less everything after it costs you.",
-  support:"Right now, getting started is the part that trips you up most. There is a real gap between sitting down and beginning. That is not laziness, and it isn't who you are. Starting is the single hardest study skill for almost everyone, and it is very much one you can build. It is worth starting here, because once beginning gets easier, a lot of the other struggles ease with it."},
+  support:"Right now, getting started is one of the things most likely to trip you up. There is a real gap between sitting down and beginning. That is not laziness, and it isn't who you are. Starting is the single hardest study skill for almost everyone, and it is very much one you can build. It is worth starting here, because once beginning gets easier, a lot of the other struggles ease with it."},
  ft:{ strength:"Once you start, you finish. When work gets difficult you stay with it instead of bailing, and you don't drift to something easier halfway through. That staying-power is a genuine strength. Plenty of people can begin a task but lose it in the middle, and you hold the line. It means the work you start turns into work that is done.",
   developing:"You see things through some of the time, but when a task drags or gets hard, that is where you are most likely to drift to something else. Following through is a skill you're still building, and it is worth building, because half-finished work has a way of piling up and weighing on you. The aim isn't to grind away without stopping. It is to make finishing the normal ending rather than the exception.",
-  support:"Finishing what you start is the hardest part for you right now. Tasks tend to get abandoned partway, especially once they turn tough or boring. That is a really common place to struggle, and it is a skill you can build, not a flaw in you. It is worth some attention, because unfinished work quietly grows into a bigger load, and steadying this helps everything stacked on top of it."},
+  support:"Finishing what you start is one of the hardest parts for you right now. Tasks tend to get abandoned partway, especially once they turn tough or boring. That is a really common place to struggle, and it is a skill you can build, not a flaw in you. It is worth some attention, because unfinished work quietly grows into a bigger load, and steadying this helps everything stacked on top of it."},
  org:{ strength:"You keep your things in order. Your notes and worksheets are where you expect them, and you are not losing study time hunting for things. It sounds small, but it is a real strength. An organised setup means your energy goes into studying instead of searching, and nothing important slips through the cracks. Keep the system that is working for you.",
   developing:"Your materials are in some kind of order, but not always. Sometimes you can put your hand straight on what you need, and sometimes you lose a bit of time looking. Organising is a skill you're still building, and a little effort here pays off out of proportion. Every minute you don't spend searching is a minute you get back for the actual work.",
   support:"Keeping track of your notes and materials is a struggle right now, and chasing misplaced things is eating into time you could be studying. This isn't about being a naturally messy person. It is a system that hasn't been set up yet, and that is very buildable. It is a good place to put early effort, because an organised base makes every other study skill easier to use."},
@@ -389,6 +389,17 @@ function levelOf(f){ const s=facetScore(f); return f==="dist" ? 9-s : s; } // hi
 function bandOf(level){ return level<=3 ? "support" : level<=6 ? "developing" : "strength"; }
 function zoneWord(level){ return level<=3 ? "still building" : level<=6 ? "taking shape" : "solid"; }
 function distBand(){ const s=facetScore("dist"); return s<=3?"clear":s<=6?"some":"alot"; }
+function distMeta(){ const b=distBand();
+  return b==="clear" ? {zone:"solid", band:"strength"}
+       : b==="some"  ? {zone:"taking shape", band:"developing"}
+       : {zone:"still building", band:"support"}; }
+function facetBand(f){ return f==="dist" ? distMeta().band : bandOf(levelOf(f)); }
+function facetZone(f){ return f==="dist" ? distMeta().zone : zoneWord(levelOf(f)); }
+function priorityList(){
+  const supports=orderFoundationFirst(allFacets().filter(f=>facetBand(f)==="support"));
+  if(supports.length) return supports;
+  return orderFoundationFirst(allFacets().filter(f=>facetBand(f)==="developing")).sort((a,b)=>levelOf(a)-levelOf(b));
+}
 function distTypeKey(){ const m={env:val(21),digital:val(22),internal:val(23)};
   return Object.keys(m).reduce((a,b)=>m[b]>m[a]?b:a,"env"); }
 function flagSelfreg(){ return val(10)+val(11); }
@@ -438,7 +449,7 @@ function renderLearner(){
     h+=`<div class="floor"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
     sec.facets.forEach(f=>{
       const lv=levelOf(f);
-      h+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>`;
+      h+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${facetZone(f)}</span></div>`;
     });
     h+=`</div>`;
   });
@@ -480,16 +491,16 @@ function renderLearner(){
   document.getElementById("learnerView").innerHTML=h;
 }
 function facetBlock(f){
-  const lv=levelOf(f); const band=bandOf(lv);
+  const lv=levelOf(f); const band=facetBand(f);
   let means, cueClass, cueText;
-  if(f==="dist"){ const b=distBand(); means=DIST_MEANS[b];
+  if(f==="dist"){ means=DIST_MEANS[distBand()];
     if(facetScore("dist")>=4) means+=" "+DIST_TYPE[distTypeKey()]; }
   else means=MEANS[f][band];
   if(band==="support"){cueClass="start";cueText="start here";}
   else if(band==="developing"){cueClass="nudge";cueText="worth a nudge";}
   else {cueClass="keep";cueText="strong, keep it up";}
   return `<div class="block"><p class="bn">${FN[f]}</p>
-    <div class="frow" style="margin:2px 0 8px;">${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>
+    <div class="frow" style="margin:2px 0 8px;">${trackHTML(lv)}<span class="zw">${facetZone(f)}</span></div>
     <p class="means">${means}</p>
     <span class="cue ${cueClass}">${cueText}</span></div>`;
 }
@@ -502,26 +513,34 @@ function synthesis(){
   else b1="Your foundations are mostly in place, which is a good base to build the rest on.";
   // beat2: highest solid outside foundation
   const outside=allFacets().filter(f=>!found.includes(f));
-  const solidOut=outside.filter(f=>levelOf(f)>=7).sort((a,b)=>levelOf(b)-levelOf(a));
+  const solidOut=outside.filter(f=>facetBand(f)==="strength").sort((a,b)=>levelOf(b)-levelOf(a));
   let b2="";
   if(solidOut.length) b2=" Higher up, "+FN[solidOut[0]].toLowerCase()+" is one you can already lean on.";
-  else { const solidIn=found.filter(f=>levelOf(f)>=7).sort((a,b)=>levelOf(b)-levelOf(a));
+  else { const solidIn=found.filter(f=>facetBand(f)==="strength").sort((a,b)=>levelOf(b)-levelOf(a));
     if(solidIn.length) b2=" "+FN[solidIn[0]]+" is one you can already lean on."; }
-  // beat3: lowest facets as gains
-  const lows=orderFoundationFirst(allFacets().filter(f=>levelOf(f)<=6)).sort((a,b)=>levelOf(a)-levelOf(b)).slice(0,3);
+  // beat3: previews the same priorities as Where to start (foundation-first), with a broad-profile branch
+  const lowsAll=allFacets().filter(f=>facetBand(f)!=="strength");
   let b3;
-  if(lows.length===0) b3=" The whole set is strong, so from here it is about keeping it that way and stretching it where it gets tested.";
-  else { const names=lows.map(f=>FN[f].toLowerCase());
+  if(lowsAll.length===0) b3=" The whole set is strong, so from here it is about keeping it that way and stretching it where it gets tested.";
+  else if(lowsAll.length>5){
+    const foundSupport=found.some(f=>facetBand(f)==="support");
+    b3 = foundSupport
+      ? " Most of your toolkit is still being built, which is common, and nothing to be discouraged by. The place to begin is the foundation, because steadying it lifts everything above it."
+      : " Most of your toolkit is still taking shape, which is common, and nothing to be discouraged by. Where to start, below, picks out the places where effort will count most.";
+  }
+  else { const names=priorityList().slice(0,3).map(f=>FN[f].toLowerCase());
     const list = names.length===1?names[0] : names.slice(0,-1).join(", ")+" and "+names[names.length-1];
-    b3=" The skills still going in sit mostly in "+list+", and that is where the biggest gains are waiting."; }
+    b3 = names.length===1
+      ? " The first place to build is "+list+", and that is where the biggest gains are waiting."
+      : " The first places to build are "+list+", and that is where the biggest gains are waiting."; }
   return b1+b2+b3;
 }
 function actionPlan(){
   const facets=allFacets();
   const nm = firstName()? firstName()+", " : "";
-  const supports=orderFoundationFirst(facets.filter(f=>levelOf(f)<=3));
-  const devs=orderFoundationFirst(facets.filter(f=>levelOf(f)>=4&&levelOf(f)<=6)).sort((a,b)=>levelOf(a)-levelOf(b));
-  const strengths=facets.filter(f=>levelOf(f)>=7).sort((a,b)=>levelOf(b)-levelOf(a));
+  const supports=orderFoundationFirst(facets.filter(f=>facetBand(f)==="support"));
+  const devs=orderFoundationFirst(facets.filter(f=>facetBand(f)==="developing")).sort((a,b)=>levelOf(a)-levelOf(b));
+  const strengths=facets.filter(f=>facetBand(f)==="strength").sort((a,b)=>levelOf(b)-levelOf(a));
   const top = strengths[0] || orderFoundationFirst(facets).sort((a,b)=>levelOf(b)-levelOf(a))[0];
   let h="";
   const fired=[]; if(flagSelfreg()<=2) fired.push("selfreg"); if(flagBrain()<=2) fired.push("brain");
@@ -540,7 +559,7 @@ function actionPlan(){
     h+=`<p>So, ${nm}where to from here? For you, this is less about fixing things and more about levelling up. Let us look at where the next gains are.</p>`;
     h+=leadStrength(top);
     const f1=devs[0], f2=devs[1];
-    if(f1) h+=`<div class="pfocus"><p>The one closest to tipping into a real strength is <b>${FN[f1]}</b>. ${HOOK[f1]} A little attention here pays off quickly.</p></div>`;
+    if(f1) h+=`<div class="pfocus"><p>The one to start with is <b>${FN[f1]}</b>. ${HOOK[f1]}</p></div>`;
     if(f2) h+=`<div class="pfocus"><p><b>${FN[f2]}</b> is the next one worth a look. ${HOOK[f2]}</p></div>`;
     h+=flagBlock();
     h+=`<p>This is about sharpening rather than rescuing. Pick one, give it a few weeks, and watch it tip over into something you can rely on.</p>`;
@@ -557,8 +576,11 @@ function actionPlan(){
   return h;
 }
 function leadStrength(f){
-  const s = (f==="dist") ? DIST_MEANS.clear : (MEANS[f]?MEANS[f].strength:"");
-  return `<div class="strong-lead"><p>First, something you are already doing well. <b>${FN[f]}</b>. ${firstSentence(s)} Start from that. Study skills grow faster when you build on what is already working.</p></div>`;
+  if(facetBand(f)==="strength"){
+    const s = (f==="dist") ? DIST_MEANS.clear : (MEANS[f]?MEANS[f].strength:"");
+    return `<div class="strong-lead"><p>First, something you are already doing well. <b>${FN[f]}</b>. ${firstSentence(s)} Start from that. Study skills grow faster when you build on what is already working.</p></div>`;
+  }
+  return `<div class="strong-lead"><p>Right now, your steadiest area is <b>${FN[f]}</b>. It isn't fully built yet, but it is further along than the rest, and it is a good place to start from.</p></div>`;
 }
 
 // ---- render counsellor ----
@@ -641,9 +663,9 @@ function buildLearnerText(){
     sec.facets.forEach(f=>{
       const lv=levelOf(f);
       let means;
-      if(f==="dist"){ const b=distBand(); means=DIST_MEANS[b]; if(facetScore("dist")>=4) means+=" "+DIST_TYPE[distTypeKey()]; }
-      else means=MEANS[f][bandOf(lv)];
-      L.push("  "+FN[f]+": "+zoneWord(lv));
+      if(f==="dist"){ means=DIST_MEANS[distBand()]; if(facetScore("dist")>=4) means+=" "+DIST_TYPE[distTypeKey()]; }
+      else means=MEANS[f][facetBand(f)];
+      L.push("  "+FN[f]+": "+facetZone(f));
       L.push("  "+means);
       L.push("");
     });
@@ -701,7 +723,7 @@ function buildSummary(){
   const dt={env:"external, surroundings",digital:"external, phone",internal:"internal, mind-wandering"};
   L.push("  Distraction: "+facetScore("dist")+"/9"+(facetScore("dist")>=4?", mainly "+dt[distTypeKey()]:""));
   L.push("");
-  const supports=orderFoundationFirst(allFacets().filter(f=>levelOf(f)<=3)).map(f=>FN[f]);
+  const supports=orderFoundationFirst(allFacets().filter(f=>facetBand(f)==="support")).map(f=>FN[f]);
   L.push("Priorities (foundation-first): "+(supports.length?supports.join(", "):"none, consider levelling up the lowest developing area"));
   L.push("");
   L.push("Diagnostic only. Bands and thresholds are provisional pending pilot.");
