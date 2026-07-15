@@ -80,6 +80,9 @@
   ul.vp{ padding-left:18px; font-size:13px; } ul.vp li{ margin:5px 0; }
   .note{ font-size:12px; color:var(--faint); }
   .field{ margin:0; }
+  .field.missed select, .field.missed input{ border-color:var(--coral); }
+  .fmiss-note{ color:var(--coral); font-size:12px; font-weight:700; margin:4px 0 0; display:none; }
+  .consentrow.missed{ border-left:3px solid var(--coral); padding-left:12px; margin-left:-15px; }
   .field label{ display:block; font-size:12px; font-weight:700; color:var(--soft); margin-bottom:4px; }
   .field input, .field select{ font-family:inherit; font-size:14px; padding:9px 11px; border:1.5px solid var(--line2); border-radius:8px; width:210px; max-width:100%; background:#fff; color:var(--ink); }
   .fields{ display:flex; gap:18px; flex-wrap:wrap; }
@@ -118,15 +121,17 @@
   .noticeupd{ color:var(--soft); font-size:12.5px; }
   .noticeclose{ position:absolute; top:10px; right:14px; background:none; border:none; font-size:28px; line-height:1; color:var(--soft); cursor:pointer; }
   @media (max-width:560px){ .fname{ width:100%; } .zw{ width:auto; } h1{ font-size:34px; } }
+  .printfoot{ display:none; }
   @media print{
-    @page{ size:A4; margin:14mm; }
+    @page{ size:A4; margin:14mm 14mm 20mm; }
     html,body{ background:#fff; }
     .wrap{ max-width:none; padding:0; }
-    #intro, #quiz, .toolbar, .bar-sticky{ display:none !important; }
+    #intro, #quiz, .toolbar, .bar-sticky, .onscreen-only{ display:none !important; }
     #results{ display:block !important; }
     .card{ border:none; padding:0; margin:10px 0; }
     .trk i, .trk{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    .block, .floor{ page-break-inside:avoid; }
+    .block, .floor, .nobreak{ page-break-inside:avoid; }
+    .printfoot{ display:block; text-align:center; font-style:italic; font-size:11px; color:var(--soft); margin-top:24px; }
   }
 
   html.embedded .bar-sticky{ position:static; background:none; padding-top:6px; }
@@ -139,46 +144,58 @@
   <header>
     <h1>Study Toolkit Profile</h1>
     <p class="sub">A study-skills check-in</p>
-    <p class="companion">Companion to Study Tools for a New Generation</p>
   </header>
 
   <div id="intro" class="card">
-    <p class="lead">This is a check-in on how you study. Studying well is not one big skill, it is a handful of smaller ones that work together, and this looks at five of them. There are no right or wrong answers and nothing to pass or fail. All it asks is that you answer honestly, so we can show you what is already working well and where a little more attention would help most. These are habits, and habits can be built.</p>
+    <p class="note" style="margin:0 0 12px;">You're using a beta version of the Study Toolkit Profile. We will continue to review and refine it as we go.</p>
+    <p class="lead">This is a check-in on how you study. Studying well is not one big skill, it is a handful of smaller ones that work together, grouped into five areas. There are no right or wrong answers and nothing to pass or fail. All it asks is that you answer honestly, so we can show you what is already working well and where a little more attention would help most. These are habits, and habits can be built.</p>
     <p class="lead" style="margin-top:12px;">For each statement, choose the option that best matches <b>how often it is true for you</b>. When you submit, your profile appears on screen to read and keep.</p>
     <div class="fields" style="margin-top:18px;">
-      <div class="field"><label for="inFirst">First name</label><input id="inFirst" type="text" autocomplete="off"></div>
-      <div class="field"><label for="inSurname">Surname</label><input id="inSurname" type="text" autocomplete="off"></div>
-      <div class="field"><label for="inEmail">Parent or guardian email</label><input id="inEmail" type="email" autocomplete="off"></div>
-      <div class="field"><label for="inSchool">School</label><input id="inSchool" type="text" autocomplete="off"></div>
-      <div class="field"><label for="inGrade">Grade</label><select id="inGrade"><option value="">Select</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+      <div class="field" id="field-inFirst"><label for="inFirst">First name</label><input id="inFirst" type="text" autocomplete="off"><p class="fmiss-note">Please add your first name.</p></div>
+      <div class="field" id="field-inSurname"><label for="inSurname">Surname</label><input id="inSurname" type="text" autocomplete="off"><p class="fmiss-note">Please add your surname.</p></div>
+      <div class="field" id="field-inEmail"><label for="inEmail">Parent or guardian email</label><input id="inEmail" type="email" autocomplete="off">
+        <p class="note" style="margin-top:4px;">Please double-check the email address is correct.</p><p class="fmiss-note">Please add a valid parent or guardian email.</p></div>
+      <div class="field" id="field-inSchool"><label for="inSchool">School</label><input id="inSchool" type="text" autocomplete="off"><p class="fmiss-note">Please add your school.</p></div>
+      <div class="field" id="field-inGrade"><label for="inGrade">Grade</label><select id="inGrade"><option value="">Select</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select><p class="fmiss-note">Please select your grade.</p></div>
+      <div class="field" id="field-inSex"><label for="inSex">Gender</label><select id="inSex"><option value="">Select</option><option>Female</option><option>Male</option><option>Prefer not to say</option></select><p class="fmiss-note">Please select an option.</p></div>
+      <div class="field" id="field-inProvince"><label for="inProvince">Province or region</label><select id="inProvince" onchange="document.getElementById('field-inProvinceOther').style.display=(this.value==='Other'?'block':'none');"><option value="">Select</option><option>Eastern Cape</option><option>Free State</option><option>Gauteng</option><option>KwaZulu-Natal</option><option>Limpopo</option><option>Mpumalanga</option><option>North West</option><option>Northern Cape</option><option>Western Cape</option><option>Namibia</option><option>Other</option></select><p class="fmiss-note">Please select a province or region.</p></div>
+      <div class="field" id="field-inProvinceOther" style="display:none;"><label for="inProvinceOther">Please specify the country</label><input id="inProvinceOther" type="text" autocomplete="off"><p class="fmiss-note">Please specify the country.</p></div>
+      <div class="field" id="field-inLolt"><label for="inLolt">Home language</label><select id="inLolt"><option value="">Select</option><option>Afrikaans</option><option>English</option><option>isiNdebele</option><option>isiXhosa</option><option>isiZulu</option><option>Sepedi</option><option>Sesotho</option><option>Setswana</option><option>siSwati</option><option>Tshivenda</option><option>Xitsonga</option><option>Other</option></select><p class="fmiss-note">Please select a home language.</p></div>
     </div>
-    <p class="note" style="margin-top:10px;">Please double-check the email address is correct.</p>
     <div class="consent">
-      <p class="consenthead">For parents and guardians</p>
-      <label class="consentrow"><input type="checkbox" id="inConsent"><span>I have read the <a href="#" onclick="openNotice();return false;">privacy notice</a>, and a parent or guardian has given permission for this assessment to be completed.</span></label>
+      <p class="consenthead">For the parent or guardian</p>
+      <label class="consentrow" id="row-inConsent"><input type="checkbox" id="inConsent"><span>I have read the <a href="#" onclick="openNotice();return false;">privacy notice</a>, including the research disclosure, and give permission for this assessment to be completed.</span></label>
+      <p class="fmiss-note" id="miss-inConsent">Please tick this box to confirm permission has been given.</p>
       <div id="noticeInline" style="display:none;margin:10px 0 4px;padding:14px 16px;border:1px solid #cfd2e0;border-radius:10px;background:#fff;max-height:320px;overflow:auto;">
         <h2 style="margin-top:0;">Privacy notice</h2>
     <h3>Who we are</h3>
-    <p>The Study Toolkit Profile is provided by Study Toolbox. You can reach us at info@studytools.co.za or at www.studytools.co.za. For the purposes of South Africa's Protection of Personal Information Act (POPIA), Study Toolbox is the responsible party for your information.</p>
+    <p>The Study Toolkit Profile is provided by Study Toolbox. The learner, or their parent or guardian, can reach Study Toolbox at info@studytools.co.za or at www.studytools.co.za. For the purposes of South Africa's Protection of Personal Information Act (POPIA), Study Toolbox is the responsible party for the learner's information.</p>
     <h3>What we collect</h3>
-    <p>When you complete the profile, we collect your first name, surname, school, grade, the date you complete it, the answers you give, and a parent or guardian's email address. Your answers are used to work out your study profile, which includes a few indicators about wellbeing, such as sleep and managing stress.</p>
+    <p>When the learner completes the profile, Study Toolbox collects the learner's first name, surname, school, grade, the date of completion, the answers given to all 37 statements, and a parent or guardian's email address. For research purposes, Study Toolbox also collects the learner's gender, province or region, and home language.</p>
     <h3>Why we collect it</h3>
-    <p>We use this information to create your study profile and show it to you on screen, to keep a copy so we can have a record and improve the assessment over time, and, where a counsellor or teacher is running the assessment with you, to share your profile with them. We do not sell your information, and we do not share it with any outside party for their own purposes.</p>
+    <p>This information is used for two things. First, and most importantly, it is used to create the learner's study profile and show it to them on screen, to keep a copy so there is a record, and, where a counsellor or teacher is running the assessment with the learner, to share the profile with them.</p>
+    <p>Second, the learner's answers, together with their gender, province or region, and home language, may also be used for research purposes, to help review and improve the Study Toolkit Profile over time, including checking that it works fairly and consistently across different learner groups. Where information is used for this purpose, it is analysed in aggregate and is not linked to an identifiable individual. Study Toolbox does not sell the learner's information, and does not share it with any outside party for their own purposes.</p>
     <h3>Where it is kept</h3>
-    <p>Your information is stored securely in the cloud, using a trusted service that holds it on our behalf and only on our instructions. That service may store it on servers outside South Africa, with appropriate safeguards in place. Only Study Toolbox can read it.</p>
+    <p>The learner's information is stored securely using Google Workspace, under a data processing agreement that requires Google to protect it to a standard equivalent to POPIA's requirements. Where information is stored or processed outside South Africa as part of this service, it remains covered by that same agreement.</p>
     <h3>Who can see it</h3>
-    <p>Only Study Toolbox, and, where relevant, the counsellor or teacher running the assessment with you. No one else.</p>
+    <p>Only Study Toolbox, and, where relevant, the counsellor or teacher running the assessment with the learner. No one else.</p>
     <h3>How long we keep it</h3>
-    <p>We keep your information for 12 months, and then delete it. You can ask us to delete it sooner.</p>
+    <p>Study Toolbox keeps the learner's information for 12 months, and then deletes it. The learner, or their parent or guardian, can ask for it to be deleted sooner.</p>
     <h3>Permission for under-18s</h3>
     <p>Most learners completing this are under 18. For that reason, a parent or guardian must give permission before the assessment is completed.</p>
     <h3>Your rights</h3>
-    <p>You can ask us what information we hold about you, ask us to correct it, or ask us to delete it, and you can object to how we use it. Just email info@studytools.co.za. If you are not satisfied, you may also contact the Information Regulator of South Africa.</p>
+    <p>The learner, or their parent or guardian, can ask what information is held, ask for it to be corrected, or ask for it to be deleted, and can object to how it is used. Contact info@studytools.co.za. If not satisfied with the response, the Information Regulator of South Africa can also be contacted.</p>
     <h3>Marketing</h3>
-    <p>We will not use the parent or guardian's email to send you marketing unless they have separately chosen to receive it.</p>
-    <p class="noticeupd">Last updated: June 2026</p>
+    <p>The parent or guardian's email will not be used to send marketing unless they have separately chosen to receive it.</p>
+    <p class="noticeupd">Last updated: July 2026</p>
         <button class="btn ghost" onclick="closeNotice()" style="margin-top:8px;">Close</button>
       </div>
+    </div>
+    <div class="consent" style="margin-top:10px;">
+      <p class="consenthead">For the learner</p>
+      <p style="font-size:14px;margin:0 0 10px;">Your answers are kept confidential and are never shared. Some of your answers may also be used, without your name attached, to help review and improve the Study Toolkit Profile.</p>
+      <label class="consentrow" id="row-inAssent"><input type="checkbox" id="inAssent"><span>I agree to complete this assessment, and I give permission for my answers to be used as described above.</span></label>
+      <p class="fmiss-note" id="miss-inAssent">Please tick this box to confirm you agree.</p>
     </div>
     <p id="introWarn" class="warn" style="display:none;">Please add your name, email, school and grade before submitting.</p>
   </div>
@@ -279,60 +296,60 @@ const PAIRS = { gs:[[1,2],3], ft:[[4,5],6], org:[[7,8],9], pt:[[15,16],17], ms:[
 
 const MEANS = {
  gs:{ strength:"When you sit down to work, you get going, and that is a real strength. You don't wait for the perfect moment or let a dull task drift. You start, even when you'd rather not. Beginning is the hardest part for most people, so having this one settled means your energy goes into the actual work instead of the battle to start. Keep protecting it.",
-  developing:"You can get started, and you often do, but it depends on the day, the subject, or how the task feels. When work looks boring or hard, beginning it is where things sometimes stall. This is a skill you're still building, and one of the most useful to build, because every study session has to clear this first hurdle. The more reliably you can begin, the less everything after it costs you.",
-  support:"Right now, getting started is one of the things most likely to trip you up. There is a real gap between sitting down and beginning. That is not laziness, and it isn't who you are. Starting is the single hardest study skill for almost everyone, and it is very much one you can build. It is worth starting here, because once beginning gets easier, a lot of the other struggles ease with it."},
- ft:{ strength:"Once you start, you finish. When work gets difficult you stay with it instead of bailing, and you don't drift to something easier halfway through. That staying-power is a genuine strength. Plenty of people can begin a task but lose it in the middle, and you hold the line. It means the work you start turns into work that is done.",
-  developing:"You see things through some of the time, but when a task drags or gets hard, that is where you are most likely to drift to something else. Following through is a skill you're still building, and it is worth building, because half-finished work has a way of piling up and weighing on you. The aim isn't to grind away without stopping. It is to make finishing the normal ending rather than the exception.",
-  support:"Finishing what you start is one of the hardest parts for you right now. Tasks tend to get abandoned partway, especially once they turn tough or boring. That is a really common place to struggle, and it is a skill you can build, not a flaw in you. It is worth some attention, because unfinished work quietly grows into a bigger load, and steadying this helps everything stacked on top of it."},
+  developing:"You can get started, and you often do, but it depends on the day, the subject, or how the task feels. When work looks boring or hard, beginning it is where things sometimes stall. This is a skill you're still building, and one of the most useful to build, because every study session has to clear this first hurdle. The more you practise starting the moment you sit down, even before you feel ready, the less time gets lost deciding whether to begin.",
+  support:"Right now, getting started is the part that trips you up most. There is a real gap between sitting down and actually getting started. That is not laziness, and it isn't who you are. Starting is the single hardest study skill for almost everyone, and it is very much one you can build. It is worth starting here, because once beginning gets easier, a lot of the other struggles ease with it."},
+ ft:{ strength:"Once you start, you finish. When work gets difficult you stay with it instead of bailing, and you don't drift to something easier halfway through. That staying-power is a genuine strength. Plenty of people can begin a task but lose it in the middle, and you hold the line. It means the work you start turns into work that gets done.",
+  developing:"You see things through some of the time, but when a task drags or gets hard, that is where you are most likely to drift to something else. Following through is a skill you're still building, and it is worth building, because half-finished work has a way of piling up and weighing on you. The aim isn't to grind away without stopping, it is to make sure you finish what you started. It does not always have to be in one single session.",
+  support:"Finishing what you start is one of the hardest parts for you right now. Tasks tend to get abandoned partway, especially once they turn tough or boring. That is a really common place to struggle, and it is a skill you can build. It is worth the effort, because unfinished tasks don't just wait quietly, they pile up and make the next thing you sit down to do feel heavier before you've even started."},
  org:{ strength:"You keep your things in order. Your notes and worksheets are where you expect them, and you are not losing study time hunting for things. It sounds small, but it is a real strength. An organised setup means your energy goes into studying instead of searching, and nothing important slips through the cracks. Keep the system that is working for you.",
-  developing:"Your materials are in some kind of order, but not always. Sometimes you can put your hand straight on what you need, and sometimes you lose a bit of time looking. Organising is a skill you're still building, and a little effort here pays off out of proportion. Every minute you don't spend searching is a minute you get back for the actual work.",
-  support:"Keeping track of your notes and materials is a struggle right now, and chasing misplaced things is eating into time you could be studying. This isn't about being a naturally messy person. It is a system that hasn't been set up yet, and that is very buildable. It is a good place to put early effort, because an organised base makes every other study skill easier to use."},
+  developing:"Your materials are in some kind of order, but not always. Sometimes you can put your hand straight on what you need, and sometimes you lose a bit of time looking. Organising is a skill you're still building, and a little effort here will really pay off. Every minute you don't spend searching is a minute you get back for the real work.",
+  support:"Keeping track of your notes and materials is a struggle right now, and chasing misplaced things is eating into time you could be studying. This usually isn't about being messy by nature, it's just that no system for organising your materials was ever set up, so things end up scattered instead of sorted. Start by clearing out what's built up so far, old tests, loose papers, anything you no longer need. Then give each subject its own folder or section, so anything new has somewhere to go from the start."},
  sg:{ strength:"You set clear goals for yourself, you have reasons that matter to you for chasing them, and you know where to turn when you get stuck. That combination is powerful. A goal you care about pulls you through the subjects you don't enjoy, and knowing where to find help means a tricky patch doesn't stop you. This is a strong place to aim from, so keep setting targets you can name and measure.",
   developing:"You have some sense of what you are working towards, but your goals aren't always clear, measurable, or tied to a reason that really moves you. When you are stuck, you don't always know where to turn next. Setting goals is a skill you're still building, and it is worth building, because a vague aim is hard to plan around. The clearer and more personal your target, the easier everything after it becomes.",
-  support:"Right now you are mostly working without a clear target in mind, which makes it hard to know whether you are getting anywhere. That is not a lack of ambition. It usually just means no one has shown you how to turn a wish into a goal you can measure and chase. This is a really useful place to build, because once you know what you are aiming for, planning your time has something to point at."},
+  support:"Right now you are mostly working without a clear target in mind, which makes it hard to know whether you are getting anywhere. That is not a lack of ambition. It usually just means that you have not yet identified exactly what you are working towards. Once you know exactly what you are aiming for, you can track your progress as you go."},
  pt:{ strength:"You plan your time well. You know what needs doing and when, you can work out what matters most when there is a lot on, and deadlines rarely catch you by surprise. That is a real strength, and it quietly protects everything else, because good planning means fewer late-night scrambles and less stress. Keep running the system that is working.",
-  developing:"You plan your time some of the time, but it isn't yet a habit you can lean on. When a lot lands at once, working out what to do first can be tricky, and the odd deadline still sneaks up on you. Planning is a skill you're still building, and a little structure here goes a long way. A rough plan you follow beats a perfect one you don't.",
-  support:"Planning your time is a struggle right now, so deadlines tend to arrive faster than expected and everything competes for your attention at once. That is a common place to come unstuck, and it is very much a skill you can build rather than something you are just bad at. It is worth early effort, because a simple plan takes a surprising amount of pressure off the rest of your week."},
- hf:{ strength:"You can hold your focus on one task for a good stretch, you notice when your mind starts to wander, and you bring it back. You also tend to work on one thing at a time rather than juggling several. That is a genuine strength, and one of the biggest multipliers there is, because focused time is worth far more than scattered time. Keep guarding the conditions that let you concentrate.",
+  developing:"You plan your time some of the time, but it isn't yet a skill you can lean on. When a lot lands at once, working out what to do first can be tricky, and the odd deadline still sneaks up on you. Planning is a skill you're still building, and a little structure here goes a long way. A basic plan you follow beats a perfect one you don't.",
+  support:"When nothing is planned out, every task competes for your attention at once, so you end up doing whatever feels most urgent rather than what matters most. Set aside 20 minutes before the start of each week to write down what needs doing, and assign each task to a specific day. Then each day, choose the top two or three things on that list to get done first. A basic plan like this takes far more pressure off your week than trying to hold it all in your head."},
+ hf:{ strength:"You can hold your focus on one task for a good stretch, you notice when your mind starts to wander, and you bring it back. You also tend to work on one thing at a time rather than juggling several. That is a genuine strength. A focused 25 minutes gets you further than an hour of half-attention, because your brain is working on one thing instead of splitting itself between several. Keep guarding whatever it is about your setup that lets you concentrate like this.",
   developing:"You can focus, but holding it is hit and miss. Some sessions your attention stays put, and others your mind drifts off and takes a while to come back. Holding focus is a skill you're still building, and it is worth building, because a wandering mind makes studying take far longer than it should. Catching the drift sooner is the part that makes the biggest difference.",
-  support:"Staying focused on one task is hard for you right now, and your attention tends to slip away before you have got much done. That is not a sign that something is wrong with you. Focus is a skill, and like any skill it strengthens with the right practice. It is worth real attention here, because steadier focus makes every other study skill pay off more."},
- ms:{ strength:"You make sense of new work rather than just collecting it. You put ideas into your own words to check you have got them, and you link new work to things you already know. That is exactly how understanding is built, and it is a real strength, because work you understand sticks far better than work you have only memorised. Keep doing the thinking that makes it yours.",
-  developing:"You sometimes work to understand new material, and other times you fall back on memorising it as it stands. Making sense of it is a skill you're still building, and it is worth building, because understanding is what makes knowledge stay put and work on new questions. The more you put things in your own words and tie them to what you already know, the less you will have to cram later.",
-  support:"Right now, a lot of your studying is memorising work word-for-word without fully getting underneath it. That is a common habit, and an understandable one, but it makes learning harder than it needs to be. Memorised facts fade fast and don't bend to new questions. This is a valuable place to build, because understanding even a little more deeply makes everything easier to hold on to."},
- tr:{ strength:"You test what you know instead of just rereading it. You close the book and check what you can remember, you quiz yourself, and you work through past questions without peeking at the answers. That is one of the most powerful study habits there is, and you have got it. Pulling information back out is what makes it stay, so keep making yourself recall rather than just review.",
-  developing:"You test yourself sometimes, but a fair amount of your studying is still rereading and hoping it sticks. Testing your recall is a skill you're still building, and it is one of the highest-payoff habits to build, because trying to remember something is what fixes it in place. Even a quick self-quiz beats reading the same page again.",
-  support:"Right now your studying leans mostly on rereading rather than testing yourself, which feels productive but is one of the weakest ways to make things stick. That is not your fault. Rereading is what most people are taught to do. This is a high-value place to build, because swapping some of that rereading for pulling the answer out of your own head can change how much you remember by a lot."},
- prep:{ strength:"You prepare properly. You start early rather than the night before, and you make sure your work is complete and up to date before you revise. That is a real strength, and it takes a lot of pressure off, because steady preparation means you walk into exams having learned the work rather than skimmed it. Keep giving yourself the runway.",
-  developing:"You sometimes start preparing in good time, and other times it slides closer to the deadline than you would like. Preparation is a skill you're still building, and it is worth building, because work spread out over time sticks far better than work crammed into a night or two. Starting even a little earlier makes the run-up calmer and the learning deeper.",
-  support:"Right now, most of your studying is happening in the last day or two before a test, which means cramming under pressure. That is incredibly common, and it isn't a sign you don't care. It usually just means preparation hasn't been planned in yet. This is a really worthwhile place to build, because spreading the work out even a bit takes the panic out of exams and helps far more of it stay in."},
- exam:{ strength:"You handle exam day well. You plan your time so you don't run out, you read each question carefully before answering, and stress doesn't tend to freeze you up. That is a real strength, because plenty of well-prepared people lose marks on the day to rushing, misreading, or nerves, and you hold steady. Keep trusting the routine that keeps you calm and clear.",
-  developing:"You manage exam day reasonably, but it isn't fully solid yet. Sometimes you run short on time, misread a question in a hurry, or feel nerves start to crowd in. Handling the day is a skill you're still building, and it is worth building, because it is where prepared work either shows up in your marks or slips away. A few steady habits on the day protect everything you put in beforehand.",
-  support:"Exam day is a real pressure point for you right now, whether that is running out of time, misreading questions under pressure, or stress making your mind go blank. That is tough, and it is also very common and very workable. None of it means you don't know the work. It often means the work can't get out under pressure. This is an important place to build, because the right habits on the day can rescue marks you have already earned through your preparation."}
+  support:"Staying focused on one task is hard for you right now, and your attention tends to slip away before you have got much done. Focus is a skill, and like any skill it strengthens with the right practice. It is worth real attention here, because steadier focus will help you to get through your work at a quicker pace and to remember more of what you study."},
+ ms:{ strength:"You make sense of new work rather than just trying to memorise it. You put ideas into your own words to check you have got them, and you link new work to things you already know. That is exactly how understanding is built, and it is a real strength, because work you understand sticks far better than work you have only memorised. Keep doing the thinking that makes the work truly yours, putting it into your own words and connecting it to what you already know.",
+  developing:"You sometimes work to understand new material, and other times you fall back on memorising it as it stands. Making sense of the work is a skill you're still building, and it is worth building, because it is far easier to recall things you understand than things you merely try to memorise. The more you put things in your own words and tie them to what you already know, the better your recall will be.",
+  support:"Right now, a lot of your studying is memorising work word-for-word without fully getting underneath it. That is a common habit, and an understandable one, but it makes learning harder than it needs to be. Memorised facts fade fast. Try explaining the idea in your own words instead of repeating it exactly, that is what makes it easier to hold on to."},
+ tr:{ strength:"You test what you know instead of just rereading it. You close the book and check what you can remember, you quiz yourself, and you work through past questions without peeking at the answers. That is a very powerful study habit. Every time you recall information, it strengthens the connections in your brain.",
+  developing:"You test yourself sometimes, but a fair amount of your studying is still rereading and hoping it sticks. With rereading, the words on the page start to look familiar, but that familiarity does not mean you understand the work or will be able to recall it later. Testing your recall is a skill you're still building, and it is well worth the effort, because it is one of the changes that makes the biggest difference to how much you actually remember. Every time you recall information, it strengthens the connections in your brain. Even a quick self-quiz beats reading the same page again.",
+  support:"Right now your studying leans mostly on rereading rather than testing yourself, which is one of the weakest ways to make things stick. Try closing your book and writing down, or saying out loud, everything you can remember, instead of just rereading the same page again. Doing this regularly will help you remember more of the information you study."},
+ prep:{ strength:"You prepare properly. You start early rather than the night before, and you make sure your work is complete and up to date before you revise. That is a real strength, because steady preparation means you walk into exams having learned the work rather than skimmed it, and that takes a lot of pressure off.",
+  developing:"You sometimes start preparing in good time, and other times it slides closer to the deadline than you would like. Preparation is a skill you're still building, and it is worth building, because work spread out over time sticks far better than work crammed into a night or two.",
+  support:"Right now, most of your studying is happening in the last day or two before a test, which means cramming under pressure. That is incredibly common, and it isn't a sign you don't care. It usually just means preparation hasn't been planned in yet. Spreading the work out, even a little, takes much of the panic out of exams and helps far more of what you study stay in your memory."},
+ exam:{ strength:"Once you sit down to write the exam, things tend to go well for you. You plan your time so you don't run out, you read each question carefully before answering, and stress doesn't tend to freeze you up. That is a real strength, because plenty of well-prepared people lose marks on the day to rushing, misreading, or nerves, and you hold steady. Keep doing exactly that, planning your time, reading carefully, and staying steady when the pressure is on.",
+  developing:"You manage yourself reasonably well once you are writing the exam, but it isn't fully solid yet. Sometimes you run short on time, misread a question in a hurry, or start feeling too nervous to think clearly. This is a skill you're still building, and it is worth building. Exam day is where your preparation has to show up on the page. A few simple habits help: plan roughly how much time to spend on each section before you start, read each question properly before you answer, and take a few slow breaths if you feel yourself starting to panic. These small things make it far more likely that what you have learned makes it onto the page.",
+  support:"Writing the exam itself is a real pressure point for you right now, whether that is running out of time, misreading questions under pressure, or stress making your mind go blank. That is tough, and it is also very common and very workable. Stress and pressure can make it hard to show what you know, even when you have prepared well. A few simple habits can help: plan roughly how much time you will spend on each section before you start writing, read each question through properly before answering, and if you feel yourself starting to panic, pause and take a few slow breaths before carrying on."}
 };
 const DIST_MEANS = {
- clear:"When you study, not much pulls you off course. Noise, your phone, and your own wandering thoughts don't tend to derail you, and that is a real advantage. Being able to settle in without much pulling at you means your focus has room to do its work. Keep the setup that keeps things this clear.",
- some:"Some things pull at your attention while you study, enough to cost you a bit each session but not enough to take over. This is really common, and it is worth a look, because the same distraction chipping away every day adds up over a term. The good news is that the main culprit is usually easy to spot and easier to manage once you have named it.",
- alot:"A lot pulls you away when you are trying to study, and that is likely making the work feel harder and slower than it needs to. This isn't a character flaw, and you are far from alone in it. Distractions are strong by design, especially the ones on a screen. It is worth tackling head-on, because cutting down what pulls at you is one of the quickest ways to get more out of the time you already put in."
+ clear:"When you study, not much pulls you off course. Noise, your phone, and your own wandering thoughts don't tend to derail you, and that is a real advantage. It means you can just get on with the work, without anything pulling you away from it. It looks like you have your study corner set up in a way that limits distractions. Keep it up.",
+ some:"Some things pull at your attention while you study, enough to slow you down in most sessions, but not enough to take over completely. This is really common, and it is worth a look, because the same distraction chipping away every day adds up over a term. Notice what it actually is, your phone, noise, or your own wandering thoughts, and deal with that one thing directly. The main culprit is usually easy to spot and easier to manage once you have named it.",
+ alot:"Your attention often wanders from the task at hand. Many things pull you away when you are trying to study, your phone, noise around you, or your own thoughts drifting off somewhere else, and that is likely making the work feel harder and slower than it needs to. This isn't a character flaw, and you are far from alone in it. Some of these pulls are especially hard to resist, notifications and apps are built to keep grabbing your attention back, so willpower alone often isn't enough. It is worth tackling head-on, because cutting down what pulls at you is one of the quickest ways to get more out of the time you already put in."
 };
 const DIST_TYPE = {
- env:"Your answers point to your surroundings, like noise and movement, as the main thing pulling you off task. That is an external distraction, and external pulls are usually the most fixable, because they are about your study setup more than about you.",
- digital:"Your answers point to your phone and its notifications as the main thing pulling you off task. Phones are the most common external distraction there is, and like any external pull, this one is very workable once you decide how to handle it.",
- internal:"Your answers point to your own wandering thoughts as the main thing pulling you off task. That is an internal distraction, which is less about changing what is around you and more about training your attention to notice the drift and come back. It is a slightly different skill to build, and a very buildable one."
+ env:"Now let's look at what's distracting you. Your answers point to your surroundings, like noise and movement, as the main thing pulling you off task. This is usually one of the easiest types of distraction to fix, because it comes down to where and how you study. A few changes to your space, like finding a quieter spot or facing away from things that move or make noise, can make a real difference.",
+ digital:"Now let's look at what's distracting you. Your answers point to your phone and its notifications as the main thing pulling you off task. This is one of the most common distractions there is, and also one of the easiest to act on, because you can physically separate yourself from it. Try putting your phone in another room while you study, or turning off notifications for a set block of time, rather than relying on willpower to ignore it while it's within reach.",
+ internal:"Now let's look at what's distracting you. Your answers point to your own thoughts wandering, rather than anything around you, as the main thing pulling you off task. This is different from the other two types, because there's nothing outside you to change, the skill is noticing when your mind has drifted and bringing it back to the task. A simple habit that helps is keeping a small notepad nearby, if a distracting thought pops up, jot it down in one word so you can deal with it later, then return to what you were doing."
 };
-const HOOK = { gs:"Getting going is the hardest part of any study session, so winning this one early makes everything after it lighter.",
- ft:"Learning to finish what you start stops half-done work piling up and quietly weighing on you.",
- org:"Getting your materials in order is a quick win that hands you back the time you currently lose to searching.",
- sg:"Knowing exactly what you are aiming for gives everything else something to point at, so this one quietly unlocks the rest.",
- pt:"A simple plan you follow takes a surprising amount of pressure off your whole week.",
- hf:"Steadier focus makes every minute of study worth more, so effort here multiplies everything else.",
- dist:"Cutting down what pulls you off task is one of the fastest ways to get more out of the time you already put in.",
- ms:"Understanding work instead of just memorising it is what makes it stick and bend to new questions.",
- tr:"Swapping some rereading for testing yourself is one of the highest-payoff changes there is.",
- prep:"Starting even a little earlier turns exam panic into something far calmer and helps far more of the work stay in.",
- exam:"A few steady habits on the day protect the marks you have already earned through your preparation." };
+const HOOK = { gs:"Starting is the hard part, not the work itself. You don't need to feel ready, you just need to begin. Set a timer for a short, specific length of time and tell yourself you only have to work until it goes off. Once you're in, carrying on is far easier than starting was. It also helps to start at the same time and in the same place each day, so you're not deciding whether to start, you're just doing what you always do at that time.",
+ ft:"A task feels hardest to stick with right in the middle, once the newness has worn off and the finish still feels far away. That is exactly when most people drift off to something else. Break the task into smaller pieces with a clear stopping point for each one, so you are never just grinding towards a distant finish. Finishing one piece is a real marker of progress, even if the whole task takes several sittings to complete.",
+ org:"Losing time to searching almost always means your things do not have one set place they belong. Give each subject its own folder, and pick one spot for loose worksheets and handouts. Put things there straight away when you finish with them, rather than wherever is closest. Once you always know exactly where to look, you stop losing time to searching.",
+ sg:"A goal you cannot measure makes it hard to know if you are getting anywhere, so effort can start to feel pointless even when you are putting in the work. Pick one subject and set a specific target you can track, for example aiming to improve your mark by 5% by the next test, and write down one reason that target actually matters to you. Having something concrete to aim for turns vague effort into progress you can see.",
+ pt:"When nothing is planned out, every task competes for your attention at once, so you end up doing whatever feels most urgent rather than what matters most. Set aside 20 minutes before the start of each week to write down what needs doing, and assign each task to a specific day. Then each day, choose the top two or three things on that list to get done first. A basic plan like this takes far more pressure off your week than trying to hold it all in your head.",
+ hf:"Your focus will wander sometimes, that is normal for everyone. What makes the difference is how quickly you notice and bring it back. Try working in blocks of 25 to 45 minutes on one task only, shorter for complex material and longer for more straightforward material, with a short break in between each block. The moment you catch your mind drifting, just return to the task without criticising yourself for it. The faster you catch each drift, the less time you lose, and that adds up over a whole study session.",
+ dist:"Every time your attention gets pulled away, it takes time to get back into what you were doing, not just the few seconds you were distracted for. That is why small distractions, if they happen often, can take up far more of your study time than you would expect. Notice what pulls at you most often, and deal with that one thing directly, for example putting your phone in another room, finding a quieter place to study, or having a plan ready for when your mind starts to wander.",
+ ms:"Understanding work instead of just memorising it is what makes it stick, and it also means you can use it to answer questions you have not seen before, not just the ones you learned word for word. Try explaining a new idea in your own words, and link it to something you already know. If parts still feel unclear when you try this, that is exactly where to go back and work through it again.",
+ tr:"Testing yourself is what makes information stick for later, especially under exam pressure. Try using flash cards, working through past exam papers, or closing your notes and saying out loud everything you can remember. If something will not come to mind, that is exactly what you need to go back and practise recalling, not just reread.",
+ prep:"Start preparing well before the exam, rather than leaving it to the last few days. Look at what you need to cover for each subject, then use an exam planner to schedule regular timeslots to work through it. Some topics will take longer than you expect, so leave a few timeslots unplanned as buffer. That way, if one topic runs over, it does not throw out your whole plan.",
+ exam:"A little stress before an exam is completely normal, and it can even help you stay alert and focused. It only becomes a problem when it takes over, racing thoughts, a blank mind, or freezing up are all signs that stress has gone past the helpful point. Regular exercise is one of the best ways to keep your stress levels manageable overall. In the exam itself, a few slow breaths can help bring your thinking back when you feel stress building. Managing stress this way gives what you have learned a real chance to come out on the page, instead of getting lost to panic." };
 const FLAG_LEARNER = {
- selfreg:"One more thing, and it is not a study task. Your answers suggest that settling yourself when stress or frustration hits is hard in the moment. That sits underneath everything else here, so it is worth a quiet chat with someone you trust rather than something to leave in the background.",
- brain:"One more thing, and it is not a study task. Your answers suggest that sleep and the basics slip in the run-up to exams. Your brain does its best work when it is rested and fed, so this is worth sorting alongside the study habits, not after them."
+ selfreg:"Your answers suggest that settling yourself when stress or frustration hits is hard for you right now. When stress takes over, the emotional part of your brain takes priority over the part you need for thinking and learning. That makes it genuinely harder to concentrate and take in new information. A few things can help in the moment. Name what you're feeling instead of pushing through it. Take a short pause to reset before going back to the work. And remind yourself that being frustrated with a task doesn't mean you can't do it, it just means it's hard right now. It's also worth talking to someone you trust about this, they may be able to help you find ways to deal with the things that are stressing you out.",
+ brain:"Your answers suggest that sleep and eating properly tend to slip in the run-up to exams. Sleep is when your brain properly stores what you have learned that day. Going short on sleep makes it harder to hold onto new information, even if you studied it well. Food matters too, sugar and energy drinks give a quick lift and then a crash, while regular meals give you steadier energy to concentrate. A few things can help. Keep a regular bedtime, even during exam time, rather than staying up late to cram. Choose meals that give you lasting energy, rather than relying on sugary snacks or energy drinks to get through a study session."
 };
 
 let answers = {}; // id -> 0..3
@@ -350,7 +367,7 @@ function headerHTML(){ if(!meta.first) return "";
 // On submit the page posts each completed profile to your own Google Apps Script
 // endpoint (the URL below). The script logs it to your Sheet, emails you a copy,
 // and decides free or paid mode on the server. The learner sees only their report.
-const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxd5IWFzGJOJ-zzUwT6LeOwreYgsQXfepYb3agTak8MG2ypJ_zTsb127wSV_1W-7m5L/exec";
+const ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbwd2X9XXPTT1w75-UGU9kddsDFsY0dTMoCa_ZffQ8Gc9h2NWuxxGBPT1YgWF979fYVF/exec";
 const BOOK_COVER = "data:image/jpeg;base64,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";
 
 function buildQuiz(){
@@ -389,17 +406,6 @@ function levelOf(f){ const s=facetScore(f); return f==="dist" ? 9-s : s; } // hi
 function bandOf(level){ return level<=3 ? "support" : level<=6 ? "developing" : "strength"; }
 function zoneWord(level){ return level<=3 ? "still building" : level<=6 ? "taking shape" : "solid"; }
 function distBand(){ const s=facetScore("dist"); return s<=3?"clear":s<=6?"some":"alot"; }
-function distMeta(){ const b=distBand();
-  return b==="clear" ? {zone:"solid", band:"strength"}
-       : b==="some"  ? {zone:"taking shape", band:"developing"}
-       : {zone:"still building", band:"support"}; }
-function facetBand(f){ return f==="dist" ? distMeta().band : bandOf(levelOf(f)); }
-function facetZone(f){ return f==="dist" ? distMeta().zone : zoneWord(levelOf(f)); }
-function priorityList(){
-  const supports=orderFoundationFirst(allFacets().filter(f=>facetBand(f)==="support"));
-  if(supports.length) return supports;
-  return orderFoundationFirst(allFacets().filter(f=>facetBand(f)==="developing")).sort((a,b)=>levelOf(a)-levelOf(b));
-}
 function distTypeKey(){ const m={env:val(21),digital:val(22),internal:val(23)};
   return Object.keys(m).reduce((a,b)=>m[b]>m[a]?b:a,"env"); }
 function flagSelfreg(){ return val(10)+val(11); }
@@ -427,80 +433,90 @@ const SECTION_ICONS = [
 function iconFor(i){ return `<span class="sicon">${SECTION_ICONS[i]||""}</span>`; }
 
 // ---- render learner ----
+function bandColor(level){
+  const band=bandOf(level);
+  return band==="support" ? "#EF9F27" : band==="developing" ? "#85B7EB" : "#97C459";
+}
 function trackHTML(level){
   const pct=Math.round(level/9*100);
-  return `<div class="trk"><div class="tick" style="left:33%"></div><div class="tick" style="left:66%"></div><i style="width:${pct}%"></i></div>`;
+  return `<div class="trk"><i style="width:${pct}%;background:${bandColor(level)};"></i></div>`;
 }
 function renderLearner(){
-  let h=headerHTML();
-  const done = firstName()? "All done, "+firstName()+"." : "All done.";
-  h+=`<div class="status sent" style="margin-bottom:12px;">${done} This is your profile, yours to read, print and keep.</div>`;
+  // on-screen only: reminder to save/print, now at the very top, before anything else
+  let h="";
+  h+=`<div class="onscreen-only">`;
   h+=`<div style="margin:0 0 16px;padding:14px 16px;border:2px solid #0b00e4;border-radius:12px;background:#eef0ff;">`+
      `<div style="font-weight:900;font-size:16px;margin-bottom:5px;color:#0b00e4;">Keep your report before you leave</div>`+
-     `<div style="font-size:14px;line-height:1.55;margin-bottom:11px;">This page does not store your report for you. Take a moment now to save or print your copy &mdash; once you leave this page, it is gone from here.</div>`+
+     `<div style="font-size:14px;line-height:1.55;margin-bottom:11px;">This page does not store your report for you. Take a moment now to save or print your copy, once you leave this page, it is gone from here.</div>`+
      `<button onclick="window.print()" style="display:inline-block;padding:9px 18px;border:0;border-radius:8px;background:#0b00e4;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Save or print my report</button>`+
      `</div>`;
-  // snapshot
-  h+=`<p class="banner">Your study toolkit</p>`;
+  h+=`</div>`;
+  h+=headerHTML2();
+  // framing paragraph, trimmed, its closing sentence now handled by the personalised paragraph below
+  h+=`<p class="means" style="margin:8px 0 14px;">This report looks at the study habits and self-management skills that make studying work: getting started, staying organised, setting goals, managing attention, learning effectively, and preparing for exams. There are no right or wrong answers, and nothing to pass or fail. Each skill below is something you can build.</p>`;
+  h+=`<p class="note" style="margin:0 0 14px;">This is a beta version of the Study Toolkit Profile. We will continue to review and refine it, but the picture in this report reflects your answers honestly, as they stand today.</p>`;
+  h+=`<div class="rhead">${headerFieldsHTML()}</div>`;
+  const nmP = firstName()||"there";
+  h+=`<p class="means" style="margin:14px 0 14px;">This is your Study Toolkit Profile, ${nmP}. Read through it and notice the study skills that are already working for you, as well as the skills you need to work on, to get more out of the time and effort you put into your studies.</p>`;
+  // summary chart
+  h+=`<p class="banner">Summary of your toolkit</p>`;
   const opener = firstName()? firstName()+", here is the picture your check-in paints." : "Here is the picture your check-in paints.";
-  h+=`<p class="means" style="margin:6px 0 0;">${opener} Read it from the foundation up. A fuller bar is a skill you can already lean on, and a bar still filling is one you are still building.</p>`;
-  h+=`<div class="card" style="padding:8px 18px 14px;">`;
+  h+=`<p class="means" style="margin:6px 0 0;">${opener} Read it from the foundation up. A bar marked solid is a skill you can already lean on. A bar that is taking shape is one that is starting to come together. A bar that is still building is one you have not yet got going.</p>`;
+  h+=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:12px;color:var(--soft);">
+    <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#EF9F27;margin-right:5px;"></i>Support</span>
+    <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#85B7EB;margin-right:5px;"></i>Developing</span>
+    <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#97C459;margin-right:5px;"></i>Strength</span>
+  </div>`;
+  h+=`<div class="card nobreak" style="padding:8px 18px 14px;">`;
   SECTIONS.forEach((sec,si)=>{
     h+=`<div class="floor"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
     sec.facets.forEach(f=>{
       const lv=levelOf(f);
-      h+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${facetZone(f)}</span></div>`;
+      h+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>`;
     });
     h+=`</div>`;
   });
   h+=`</div>`;
-  // synthesis
-  h+=`<div class="synth">${synthesis()}</div>`;
-  // section blocks
-  h+=`<p class="banner" style="margin-top:26px;">Floor by floor</p>`;
+  // section blocks (moved before Where to start)
+  h+=`<p class="banner" style="margin-top:26px;">Your results, skill by skill</p>`;
+  h+=`<p class="means" style="margin:6px 0 14px;">Now let's walk through each skill in more detail, one at a time, starting with the foundation.</p>`;
   SECTIONS.forEach((sec,si)=>{
-    h+=`<div style="margin-top:6px;"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
+    h+=`<div class="nobreak" style="margin-top:6px;"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
     const ordered = sec.facets.slice().sort((a,b)=>levelOf(b)-levelOf(a));
     ordered.forEach(f=>{ h+=facetBlock(f); });
     h+=`</div>`;
   });
-  // action plan
+  // action plan (now after the detailed walkthrough)
   h+=`<p class="banner" style="margin-top:26px;">Where to start</p>`;
   h+=`<div class="plan">${actionPlan()}</div>`;
   // how it all fits together
   h+=`<p class="banner" style="margin-top:26px;">How it all fits together</p>`;
-  h+=`<div class="means" style="line-height:1.55;">`;
-  h+=`<p style="margin:0 0 10px;"><b>Getting started and organised</b> is the engine room. If you can get yourself going, keep at it, and find your notes when you need them, every other skill has somewhere to happen.</p>`;
-  h+=`<p style="margin:0 0 10px;"><b>Goals and time</b> give your effort a direction. A target tells your work where to point, and putting it on the calendar is what turns "I should study" into studying.</p>`;
-  h+=`<p style="margin:0 0 10px;"><b>Attention and distractions</b> decide whether the time counts. An hour at your desk only pays off for the minutes your mind is on the page, so handling what pulls you away is what makes study time real.</p>`;
-  h+=`<p style="margin:0 0 10px;"><b>Learning and remembering</b> decide how much stays. How you study, working with the material rather than reading over it, is what moves it into memory you can reach later.</p>`;
-  h+=`<p style="margin:0 0 14px;"><b>Preparing for tests and exams</b> is where it all has to show up. Starting early and keeping nerves in check is what lets you show what you know.</p>`;
-  h+=`<p style="margin:0;">On its own, each area helps a little. Together they are what studying well is, and that is why they lean on each other. The sharpest memory tricks cannot help with work you never start, and a solid plan falls apart if the phone wins every evening. So a lower area is not a dead end. It is usually the thing that, once it lifts, lets the others start working better too.</p>`;
+  h+=`<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">`;
+  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Exam readiness</p><p class="means" style="margin:0;">How you prepare for tests and exams is where everything else gets put to the test. Starting early and keeping your nerves in check lets you show what you know when it matters.</p></div>`;
+  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Learning and memory</p><p class="means" style="margin:0;">How you learn and remember decides how much of what you study stays with you afterwards. Working with the material, rather than just reading it over, is what moves it into memory you can use later.</p></div>`;
+  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Attention and focus</p><p class="means" style="margin:0;">How well you manage your attention and distractions decides whether your study time counts. An hour at your desk only helps you if your mind stays on the page, so dealing with what pulls you away is what makes that time worth something.</p></div>`;
+  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Goals and time</p><p class="means" style="margin:0;">Setting clear goals and planning your time give your effort a direction. A target tells you what you are working towards, and putting a plan on the calendar is what turns wanting to study into sitting down and studying.</p></div>`;
+  h+=`<div class="card nobreak" style="margin:0;padding:18px;border:1.5px solid var(--line2);"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Foundation</p><p class="means" style="margin:0;">Getting yourself started, staying with a task, and keeping your things in order make up your foundation. When these are solid, every other skill in this report becomes easier to use.</p></div>`;
   h+=`</div>`;
+  h+=`<p class="means" style="margin:14px 0 0;">On its own, each area helps a little. Together, they are what studying well actually is, which is why they depend on each other. So a lower area is not a dead end. It is usually the thing that, once it lifts, helps everything else work better too.</p>`;
   h+=`<p style="margin:24px 0 0; font-weight:700; font-size:16px; color:var(--green-dark);">All the best with your studies.</p>`;
-  // the book
-  h+=`<div class="bookblock">
-    <img src="${BOOK_COVER}" alt="Study Tools for a New Generation book cover">
-    <div class="bk">
-      <p class="bktitle">Study Tools for a New Generation</p>
-      <p class="bkblurb">Does my brain have a leak? The work you studied last night, the formula explained three times, your good intentions to follow the planner, all quietly draining away. The leak is not a flaw in your brain, it is a world that never stops throwing information, pings and distraction at you. Study Tools for a New Generation by Heleen Viljoen is a practical, science-backed guide for high schoolers, no magic fixes, just real tools for studying in a world of noise, deadlines and exams. <a href="https://studytools.co.za/products/study-tools-for-a-new-generation-print-edition">Order the print edition</a> at studytools.co.za.</p>
-      <p class="bkmeta"><span class="bkbiz">Study Toolbox</span> · Helping learners grow since 2012<br>www.studytools.co.za · info@studytools.co.za</p>
-    </div>
-  </div>`;
-  h+=`<p class="repfoot">Your responses are handled in line with our privacy notice at studytools.co.za, and are not shared with any outside party.</p>`;
+  h+=`<p class="printfoot">Study Toolkit Profile &middot; ${escapeHtml(fullName())} &middot; Confidential</p>`;
   document.getElementById("learnerView").innerHTML=h;
 }
+function headerHTML2(){ if(!meta.first) return ""; return `<h2 style="margin:18px 0 0;">Study Toolkit Profile</h2>`; }
+function headerFieldsHTML(){ if(!meta.first) return "";
+  return `<span><b>${escapeHtml(fullName())}</b></span><span>${escapeHtml(meta.school||"")}</span><span>Grade <b>${escapeHtml(meta.grade)}</b></span><span>Completed <b>${fmtDate(meta.date)}</b></span>`; }
 function facetBlock(f){
-  const lv=levelOf(f); const band=facetBand(f);
+  const lv=levelOf(f); const band=bandOf(lv);
   let means, cueClass, cueText;
-  if(f==="dist"){ means=DIST_MEANS[distBand()];
+  if(f==="dist"){ const b=distBand(); means=DIST_MEANS[b];
     if(facetScore("dist")>=4) means+=" "+DIST_TYPE[distTypeKey()]; }
   else means=MEANS[f][band];
-  if(band==="support"){cueClass="start";cueText="start here";}
-  else if(band==="developing"){cueClass="nudge";cueText="worth a nudge";}
+  if(band==="support"){cueClass="start";cueText="real room to grow";}
+  else if(band==="developing"){cueClass="nudge";cueText="worth building on";}
   else {cueClass="keep";cueText="strong, keep it up";}
   return `<div class="block"><p class="bn">${FN[f]}</p>
-    <div class="frow" style="margin:2px 0 8px;">${trackHTML(lv)}<span class="zw">${facetZone(f)}</span></div>
+    <div class="frow" style="margin:2px 0 8px;">${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>
     <p class="means">${means}</p>
     <span class="cue ${cueClass}">${cueText}</span></div>`;
 }
@@ -513,74 +529,99 @@ function synthesis(){
   else b1="Your foundations are mostly in place, which is a good base to build the rest on.";
   // beat2: highest solid outside foundation
   const outside=allFacets().filter(f=>!found.includes(f));
-  const solidOut=outside.filter(f=>facetBand(f)==="strength").sort((a,b)=>levelOf(b)-levelOf(a));
+  const solidOut=outside.filter(f=>levelOf(f)>=7).sort((a,b)=>levelOf(b)-levelOf(a));
   let b2="";
   if(solidOut.length) b2=" Higher up, "+FN[solidOut[0]].toLowerCase()+" is one you can already lean on.";
-  else { const solidIn=found.filter(f=>facetBand(f)==="strength").sort((a,b)=>levelOf(b)-levelOf(a));
+  else { const solidIn=found.filter(f=>levelOf(f)>=7).sort((a,b)=>levelOf(b)-levelOf(a));
     if(solidIn.length) b2=" "+FN[solidIn[0]]+" is one you can already lean on."; }
-  // beat3: previews the same priorities as Where to start (foundation-first), with a broad-profile branch
-  const lowsAll=allFacets().filter(f=>facetBand(f)!=="strength");
+  // beat3: lowest facets as gains
+  const lows=orderFoundationFirst(allFacets().filter(f=>levelOf(f)<=6)).sort((a,b)=>levelOf(a)-levelOf(b)).slice(0,3);
   let b3;
-  if(lowsAll.length===0) b3=" The whole set is strong, so from here it is about keeping it that way and stretching it where it gets tested.";
-  else if(lowsAll.length>5){
-    const foundSupport=found.some(f=>facetBand(f)==="support");
-    b3 = foundSupport
-      ? " Most of your toolkit is still being built, which is common, and nothing to be discouraged by. The place to begin is the foundation, because steadying it lifts everything above it."
-      : " Most of your toolkit is still taking shape, which is common, and nothing to be discouraged by. Where to start, below, picks out the places where effort will count most.";
-  }
-  else { const names=priorityList().slice(0,3).map(f=>FN[f].toLowerCase());
+  if(lows.length===0) b3=" The whole set is strong, so from here it is about keeping it that way and stretching it where it gets tested.";
+  else { const names=lows.map(f=>FN[f].toLowerCase());
     const list = names.length===1?names[0] : names.slice(0,-1).join(", ")+" and "+names[names.length-1];
-    b3 = names.length===1
-      ? " The first place to build is "+list+", and that is where the biggest gains are waiting."
-      : " The first places to build are "+list+", and that is where the biggest gains are waiting."; }
+    b3=" The skills still going in sit mostly in "+list+", and that is where the biggest gains are waiting."; }
   return b1+b2+b3;
+}
+function orderedByFoundationThenSeverity(arr){
+  const FOUND=["gs","ft","org"];
+  const foundIn = FOUND.filter(f=>arr.includes(f)); // fixed domain order, no severity tiebreak within foundation
+  const rest = arr.filter(f=>!FOUND.includes(f)).sort((a,b)=>levelOf(a)-levelOf(b)); // severity, lowest first
+  return foundIn.concat(rest);
+}
+function flagBlock(fired){
+  if(fired.length===0) return "";
+  const opener = fired.length===1 ? "One more thing, and it is not a study task. " : "Two more things, and neither is a study task. ";
+  const bodies = fired.map((k,i)=> (i===0? "" : "Separately, ") + FLAG_LEARNER[k]);
+  return `<div class="flagnote">${opener}${bodies.join(" ")}</div>`;
 }
 function actionPlan(){
   const facets=allFacets();
   const nm = firstName()? firstName()+", " : "";
-  const supports=orderFoundationFirst(facets.filter(f=>facetBand(f)==="support"));
-  const devs=orderFoundationFirst(facets.filter(f=>facetBand(f)==="developing")).sort((a,b)=>levelOf(a)-levelOf(b));
-  const strengths=facets.filter(f=>facetBand(f)==="strength").sort((a,b)=>levelOf(b)-levelOf(a));
+  const supports=orderedByFoundationThenSeverity(facets.filter(f=>levelOf(f)<=3));
+  const devs=orderFoundationFirst(facets.filter(f=>levelOf(f)>=4&&levelOf(f)<=6)).sort((a,b)=>levelOf(a)-levelOf(b));
+  const strengths=facets.filter(f=>levelOf(f)>=7).sort((a,b)=>levelOf(b)-levelOf(a));
+  const noStrength = strengths.length===0;
   const top = strengths[0] || orderFoundationFirst(facets).sort((a,b)=>levelOf(b)-levelOf(a))[0];
-  let h="";
   const fired=[]; if(flagSelfreg()<=2) fired.push("selfreg"); if(flagBrain()<=2) fired.push("brain");
-  const flagBlock = ()=> fired.map(k=>`<div class="flagnote">${FLAG_LEARNER[k]}</div>`).join("");
+  let h="";
+
   if(supports.length===0 && strengths.length===facets.length){
-    // Scenario C
+    // Scenario C: every facet is a genuine strength
     h+=`<p>So, ${nm}what do you do when nothing is really shouting for attention? That is a different kind of question from most, and it calls for a different kind of plan.</p>`;
     h+=`<div class="strong-lead"><b>${FN[top]}.</b> ${firstSentence(MEANS[top]?MEANS[top].strength:DIST_MEANS.clear)}</div>`;
     h+=`<p>Two things keep a strong profile strong. First, protect the habits that got you here, because they are the easiest to let slip once things feel easy. Second, find the place where even your strong skills get tested, like your hardest subject or your busiest term, and stretch them there. That is where strong students become exceptional ones.</p>`;
-    h+=flagBlock();
+    h+=flagBlock(fired);
     h+=`<p>Keep doing what you are doing, and keep an eye on the spots that test it.</p>`;
     return h;
   }
+
   if(supports.length===0){
-    // Scenario B
+    // Scenario B: no facet in Support, at least one Developing
     h+=`<p>So, ${nm}where to from here? For you, this is less about fixing things and more about levelling up. Let us look at where the next gains are.</p>`;
-    h+=leadStrength(top);
+    h+=leadStrength(top, noStrength, strengths.length);
     const f1=devs[0], f2=devs[1];
-    if(f1) h+=`<div class="pfocus"><p>The one to start with is <b>${FN[f1]}</b>. ${HOOK[f1]}</p></div>`;
+    if(f1) h+=`<div class="pfocus"><p>The one closest to tipping into a real strength is <b>${FN[f1]}</b>. ${HOOK[f1]} A little attention here pays off quickly.</p></div>`;
     if(f2) h+=`<div class="pfocus"><p><b>${FN[f2]}</b> is the next one worth a look. ${HOOK[f2]}</p></div>`;
-    h+=flagBlock();
+    h+=flagBlock(fired);
     h+=`<p>This is about sharpening rather than rescuing. Pick one, give it a few weeks, and watch it tip over into something you can rely on.</p>`;
     return h;
   }
-  // Scenario A
+
+  if(facets.every(f=>levelOf(f)<=3)){
+    // Scenario D: nothing above Support anywhere, everything still being built
+    const FOUND=["gs","ft","org"];
+    const allFoundSupport = FOUND.every(f=>supports.includes(f));
+    const picks = allFoundSupport ? supports.slice(0,3) : supports.slice(0,2);
+    h+=`<p>Right now, you are still building many of the skills this report covers. Instead of trying to sort out everything at once, let's be practical about where to begin.</p>`;
+    const verbs=["Start with","Once that begins to shift, move to","Then start working on"];
+    picks.forEach((f,i)=>{ h+=`<div class="pfocus"><p>${verbs[i]} <b>${FN[f]}</b>. ${firstSentence(HOOK[f])}</p></div>`; });
+    h+=flagBlock(fired);
+    return h;
+  }
+
+  // Scenario A: at least one facet in Support, foundation gets unconditional priority within it
   h+=`<p>So, ${nm}what do you do with all this? You don't need to take on everything at once. Let us look at where your energy will go furthest right now.</p>`;
-  h+=leadStrength(top);
-  const f1=supports[0], f2=supports[1];
+  h+=leadStrength(top, noStrength, strengths.length);
+  const FOUND=["gs","ft","org"];
+  const allFoundSupport = FOUND.every(f=>supports.includes(f));
+  const f1=supports[0], f2=supports[1], f3=supports[2];
   h+=`<div class="pfocus"><p>Now the part worth your attention. If you change one thing, make it this one. <b>${FN[f1]}</b>. ${HOOK[f1]}</p></div>`;
   if(f2) h+=`<div class="pfocus"><p>And if you have room for one more, look at <b>${FN[f2]}</b>. ${HOOK[f2]}</p></div>`;
-  h+=flagBlock();
+  if(allFoundSupport && f3) h+=`<div class="pfocus"><p>Also look at <b>${FN[f3]}</b>. ${HOOK[f3]}</p></div>`;
+  h+=flagBlock(fired);
   h+=`<p>You don't have to fix everything at once, and trying to would only spread you thin. Pick the first one, give it a few weeks, and let the win there make the next thing easier. Small, steady changes are how study skills grow.</p>`;
   return h;
 }
-function leadStrength(f){
-  if(facetBand(f)==="strength"){
-    const s = (f==="dist") ? DIST_MEANS.clear : (MEANS[f]?MEANS[f].strength:"");
-    return `<div class="strong-lead"><p>First, something you are already doing well. <b>${FN[f]}</b>. ${firstSentence(s)} Start from that. Study skills grow faster when you build on what is already working.</p></div>`;
+function leadStrength(f, noStrength, strengthCount){
+  if(noStrength){
+    return `<div class="strong-lead"><p>Right now, your steadiest area is <b>${FN[f]}</b>. It isn't fully built yet, but it is further along than the rest, and it is a good place to start from.</p></div>`;
   }
-  return `<div class="strong-lead"><p>Right now, your steadiest area is <b>${FN[f]}</b>. It isn't fully built yet, but it is further along than the rest, and it is a good place to start from.</p></div>`;
+  let h = `<div class="strong-lead"><p>First, something you are already doing well. <b>${FN[f]}</b>. ${firstSentence(MEANS[f]?MEANS[f].strength:DIST_MEANS.clear)} Start from that. Study skills grow faster when you build on what is already working.</p></div>`;
+  if(strengthCount>1){
+    h+=`<div class="strong-lead"><p>This isn't your only strength, look for the other green bars above.</p></div>`;
+  }
+  return h;
 }
 
 // ---- render counsellor ----
@@ -663,9 +704,9 @@ function buildLearnerText(){
     sec.facets.forEach(f=>{
       const lv=levelOf(f);
       let means;
-      if(f==="dist"){ means=DIST_MEANS[distBand()]; if(facetScore("dist")>=4) means+=" "+DIST_TYPE[distTypeKey()]; }
-      else means=MEANS[f][facetBand(f)];
-      L.push("  "+FN[f]+": "+facetZone(f));
+      if(f==="dist"){ const b=distBand(); means=DIST_MEANS[b]; if(facetScore("dist")>=4) means+=" "+DIST_TYPE[distTypeKey()]; }
+      else means=MEANS[f][bandOf(lv)];
+      L.push("  "+FN[f]+": "+zoneWord(lv));
       L.push("  "+means);
       L.push("");
     });
@@ -723,7 +764,7 @@ function buildSummary(){
   const dt={env:"external, surroundings",digital:"external, phone",internal:"internal, mind-wandering"};
   L.push("  Distraction: "+facetScore("dist")+"/9"+(facetScore("dist")>=4?", mainly "+dt[distTypeKey()]:""));
   L.push("");
-  const supports=orderFoundationFirst(allFacets().filter(f=>facetBand(f)==="support")).map(f=>FN[f]);
+  const supports=orderFoundationFirst(allFacets().filter(f=>levelOf(f)<=3)).map(f=>FN[f]);
   L.push("Priorities (foundation-first): "+(supports.length?supports.join(", "):"none, consider levelling up the lowest developing area"));
   L.push("");
   L.push("Diagnostic only. Bands and thresholds are provisional pending pilot.");
@@ -744,7 +785,7 @@ async function sendResults(){
         image:       { type: 'jpeg', quality: 0.92 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 820 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:   { mode: ['css','legacy'], avoid: ['.block','.floor','.bookblock'] }
+        pagebreak:   { mode: ['css','legacy'], avoid: ['.block','.floor','.nobreak'] }
       };
       var blob = await html2pdf().set(opt).from(el).outputPdf('blob');
       pdfBase64 = await new Promise(function(resolve, reject){
@@ -759,6 +800,7 @@ async function sendResults(){
   const payload = {
     first: meta.first, surname: meta.surname, email: meta.email,
     school: meta.school, grade: meta.grade, completed: fmtDate(meta.date),
+    research: { gender: meta.sex||"", province: meta.province||"", lolt: meta.lolt||"" },
     validity: cc>=3 ? ("check, "+cc+" contradictions") : "consistent",
     scores: {
       gs:facetScore("gs"), ft:facetScore("ft"), org:facetScore("org"),
@@ -801,34 +843,65 @@ function revealResults(){
   window.scrollTo(0,0);
   stpScrollParentTop();
 }
+function clearFieldMisses(){
+  document.querySelectorAll(".field.missed, .consentrow.missed").forEach(el=>el.classList.remove("missed"));
+  document.querySelectorAll(".fields .fmiss-note").forEach(el=>el.style.display="none");
+  document.getElementById("miss-inConsent").style.display="none";
+  document.getElementById("miss-inAssent").style.display="none";
+}
 async function submitResults(){
   const missing=ITEMS.filter(it=>answers[it.id]===undefined).map(it=>it.id);
   if(missing.length){ flagMissing(missing); return; }
+  clearFieldMisses();
   const first=document.getElementById("inFirst").value.trim();
   const surname=document.getElementById("inSurname").value.trim();
   const email=document.getElementById("inEmail").value.trim();
   const school=document.getElementById("inSchool").value.trim();
   const grade=document.getElementById("inGrade").value;
-  const warn=document.getElementById("introWarn");
-  if(!first||!surname||!email||!school||!grade){
-    warn.textContent="Please add your name, email, school and grade before submitting.";
-    warn.style.display="block";
-    document.getElementById("intro").scrollIntoView({behavior:"smooth"});
-    return;
-  }
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    warn.textContent="That email address does not look right. Please check it and try again.";
-    warn.style.display="block";
-    document.getElementById("intro").scrollIntoView({behavior:"smooth"});
-    return;
-  }
+  const sex=document.getElementById("inSex").value;
+  let province=document.getElementById("inProvince").value;
+  const provinceOther=document.getElementById("inProvinceOther").value.trim();
+  const lolt=document.getElementById("inLolt").value;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const checks = [
+    { id:"inFirst", bad: !first },
+    { id:"inSurname", bad: !surname },
+    { id:"inEmail", bad: !email || !emailOk },
+    { id:"inSchool", bad: !school },
+    { id:"inGrade", bad: !grade },
+    { id:"inSex", bad: !sex },
+    { id:"inProvince", bad: !province },
+    { id:"inProvinceOther", bad: province==="Other" && !provinceOther },
+    { id:"inLolt", bad: !lolt }
+  ];
+  let firstBad=null;
+  checks.forEach(c=>{
+    const fieldEl=document.getElementById("field-"+c.id);
+    if(!fieldEl) return;
+    if(c.bad){
+      fieldEl.classList.add("missed");
+      const note=fieldEl.querySelector(".fmiss-note");
+      if(note) note.style.display="block";
+      if(!firstBad) firstBad=fieldEl;
+    }
+  });
   if(!document.getElementById("inConsent").checked){
-    warn.textContent="Please tick the box to confirm a parent or guardian has given permission.";
-    warn.style.display="block";
-    document.getElementById("intro").scrollIntoView({behavior:"smooth"});
+    document.getElementById("row-inConsent").classList.add("missed");
+    document.getElementById("miss-inConsent").style.display="block";
+    if(!firstBad) firstBad=document.getElementById("row-inConsent");
+  }
+  if(!document.getElementById("inAssent").checked){
+    document.getElementById("row-inAssent").classList.add("missed");
+    document.getElementById("miss-inAssent").style.display="block";
+    if(!firstBad) firstBad=document.getElementById("row-inAssent");
+  }
+  if(firstBad){
+    firstBad.scrollIntoView({behavior:"smooth", block:"center"});
     return;
   }
-  meta={ first, surname, email, school, grade, date:new Date() };
+  if(province==="Other" && provinceOther) province="Other: "+provinceOther;
+  meta={ first, surname, email, school, grade, sex, province, lolt, date:new Date() };
   revealResults();
   setStatus("sending");
   try{ await sendResults(); setStatus(""); }
@@ -839,6 +912,7 @@ function restart(){
   document.querySelectorAll(".opt.sel").forEach(o=>o.classList.remove("sel"));
   document.querySelectorAll(".item.missed").forEach(o=>o.classList.remove("missed"));
   document.getElementById("introWarn").style.display="none";
+  clearFieldMisses();
   setStatus("");
   document.getElementById("progfill").style.width="0";
   document.getElementById("progtxt").textContent="0 of 37";
