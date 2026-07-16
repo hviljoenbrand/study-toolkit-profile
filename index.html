@@ -130,7 +130,7 @@
     #results{ display:block !important; }
     .card{ border:none; padding:0; margin:10px 0; }
     .trk i, .trk{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    .block, .floor, .nobreak{ page-break-inside:avoid; }
+    .block, .nobreak{ page-break-inside:avoid; }
     .printfoot{ display:block; text-align:center; font-style:italic; font-size:11px; color:var(--soft); margin-top:24px; }
   }
 
@@ -467,24 +467,26 @@ function renderLearner(){
     <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#85B7EB;margin-right:5px;"></i>Developing</span>
     <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#97C459;margin-right:5px;"></i>Strength</span>
   </div>`;
-  h+=`<div class="card nobreak" style="padding:8px 18px 14px;">`;
+  h+=`<div style="padding:8px 0 14px;">`;
   SECTIONS.forEach((sec,si)=>{
-    h+=`<div class="floor"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
-    sec.facets.forEach(f=>{
+    const f0 = sec.facets[0];
+    const lv0 = levelOf(f0);
+    h+=`<div class="nobreak"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
+    h+=`<div class="frow"><span class="fname">${FN[f0]}</span>${trackHTML(lv0)}<span class="zw">${zoneWord(lv0)}</span></div>`;
+    h+=`</div>`;
+    sec.facets.slice(1).forEach(f=>{
       const lv=levelOf(f);
       h+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>`;
     });
-    h+=`</div>`;
   });
   h+=`</div>`;
   // section blocks (moved before Where to start)
   h+=`<p class="banner" style="margin-top:26px;">Your results, skill by skill</p>`;
   h+=`<p class="means" style="margin:6px 0 14px;">Now let's walk through each skill in more detail, one at a time, starting with the foundation.</p>`;
   SECTIONS.forEach((sec,si)=>{
-    h+=`<div class="nobreak" style="margin-top:6px;"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
     const ordered = sec.facets.slice().sort((a,b)=>levelOf(b)-levelOf(a));
-    ordered.forEach(f=>{ h+=facetBlock(f); });
-    h+=`</div>`;
+    h+=`<div class="nobreak" style="margin-top:6px;"><p class="floorlbl">${iconFor(si)}${sec.name}</p>${facetBlock(ordered[0])}</div>`;
+    ordered.slice(1).forEach(f=>{ h+=facetBlock(f); });
   });
   // action plan (now after the detailed walkthrough)
   h+=`<p class="banner" style="margin-top:26px;">Where to start</p>`;
@@ -790,7 +792,7 @@ async function sendResults(){
         image:       { type: 'jpeg', quality: 0.92 },
         html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 820 },
         jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:   { mode: ['css','legacy'], avoid: ['.block','.floor','.nobreak'] }
+        pagebreak:   { mode: ['css','legacy'], avoid: ['.block','.nobreak'] }
       };
       var blob;
       try {
