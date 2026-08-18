@@ -121,7 +121,10 @@
   .noticeupd{ color:var(--soft); font-size:12.5px; }
   .noticeclose{ position:absolute; top:10px; right:14px; background:none; border:none; font-size:28px; line-height:1; color:var(--soft); cursor:pointer; }
   @media (max-width:560px){ .fname{ width:100%; } .zw{ width:auto; } h1{ font-size:34px; } }
-  .printfoot{ display:none; }
+  .printhead{ display:none; }
+  .pofoot-table{ width:100%; border-collapse:collapse; }
+  .pofoot-table td{ padding:0; }
+  .secdiv{ border-top:0.5px solid var(--line); margin:22px 0 0; padding-top:22px; }
   @media print{
     @page{ size:A4; margin:14mm 14mm 20mm; }
     html,body{ background:#fff; }
@@ -130,8 +133,8 @@
     #results{ display:block !important; }
     .card{ border:none; padding:0; margin:10px 0; }
     .trk i, .trk{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    .block, .nobreak{ page-break-inside:avoid; }
-    .printfoot{ display:block; text-align:center; font-style:italic; font-size:11px; color:var(--soft); margin-top:24px; }
+    .block, .nobreak, .pofoot-table tbody tr{ page-break-inside:avoid; }
+    .printhead{ display:table-cell; text-align:right; font-style:italic; font-size:10.5px; color:var(--soft); padding:0 0 6px; border:none; }
   }
 
   html.embedded .bar-sticky{ position:static; background:none; padding-top:6px; }
@@ -442,68 +445,87 @@ function trackHTML(level){
   return `<div class="trk"><i style="width:${pct}%;background:${bandColor(level)};"></i></div>`;
 }
 function renderLearner(){
-  // on-screen only: reminder to save/print, now at the very top, before anything else
-  let h="";
-  h+=`<div class="onscreen-only">`;
-  h+=`<div style="margin:0 0 16px;padding:14px 16px;border:2px solid #0b00e4;border-radius:12px;background:#eef0ff;">`+
+  // on-screen only: reminder to save/print, sits outside the table, irrelevant to pagination
+  let pre="";
+  pre+=`<div class="onscreen-only">`;
+  pre+=`<div style="margin:0 0 16px;padding:14px 16px;border:2px solid #0b00e4;border-radius:12px;background:#eef0ff;">`+
      `<div style="font-weight:900;font-size:16px;margin-bottom:5px;color:#0b00e4;">Keep your report before you leave</div>`+
      `<div style="font-size:14px;line-height:1.55;margin-bottom:11px;">This page does not store your report for you. Take a moment now to save or print your copy, once you leave this page, it is gone from here.</div>`+
      `<button onclick="window.print()" style="display:inline-block;padding:9px 18px;border:0;border-radius:8px;background:#0b00e4;color:#fff;font-weight:800;font-size:14px;cursor:pointer;">Save or print my report</button>`+
      `</div>`;
-  h+=`</div>`;
-  h+=headerHTML2();
-  // framing paragraph, trimmed, its closing sentence now handled by the personalised paragraph below
-  h+=`<p class="means" style="margin:8px 0 14px;">This report looks at the study habits and self-management skills that make studying work: getting started, staying organised, setting goals, managing attention, learning effectively, and preparing for exams. There are no right or wrong answers, and nothing to pass or fail. Each skill below is something you can build.</p>`;
-  h+=`<p class="note" style="margin:0 0 14px;">This is a beta version of the Study Toolkit Profile. We will continue to review and refine it, but the picture in this report reflects your answers honestly, as they stand today.</p>`;
-  h+=`<div class="rhead">${headerFieldsHTML()}</div>`;
+  pre+=`</div>`;
+
+  // Report content is built as an array of ROWS. Each row becomes a real <tr>,
+  // giving the print engine genuine break points, so the repeating name/date
+  // header (thead) reserves its own space on every page and never overlaps
+  // the content below it.
+  const rows=[];
+  let r="";
+  r+=headerHTML2();
+  r+=`<p class="means" style="margin:8px 0 14px;">This report looks at the study habits and self-management skills that make studying work: getting started, staying organised, setting goals, managing attention, learning effectively, and preparing for exams. There are no right or wrong answers, and nothing to pass or fail. Each skill below is something you can build.</p>`;
+  r+=`<p class="note" style="margin:0 0 14px;">This is a beta version of the Study Toolkit Profile. We will continue to review and refine it, but the picture in this report reflects your answers honestly, as they stand today.</p>`;
+  r+=`<div class="rhead">${headerFieldsHTML()}</div>`;
   const nmP = firstName()||"there";
-  h+=`<p class="means" style="margin:14px 0 14px;">This is your Study Toolkit Profile, ${nmP}. Read through it and notice the study skills that are already working for you, as well as the skills you need to work on, to get more out of the time and effort you put into your studies.</p>`;
-  // summary chart
-  h+=`<p class="banner">Summary of your toolkit</p>`;
+  r+=`<p class="means" style="margin:14px 0 14px;">This is your Study Toolkit Profile, ${nmP}. Read through it and notice the study skills that are already working for you, as well as the skills you need to work on, to get more out of the time and effort you put into your studies.</p>`;
+  r+=`<p class="note" style="margin:0 0 0;">In this report: 1. Summary &rarr; 2. Where to start &rarr; 3. Skill by skill &rarr; 4. How it fits together.</p>`;
+  rows.push(r);
+
+  // 1. summary chart intro + legend, own row
+  r=`<p class="banner">1. Summary of your toolkit</p>`;
   const opener = firstName()? firstName()+", here is the picture your check-in paints." : "Here is the picture your check-in paints.";
-  h+=`<p class="means" style="margin:6px 0 0;">${opener} Read it from the foundation up. A bar marked solid is a skill you can already lean on. A bar that is taking shape is one that is starting to come together. A bar that is still building is one you have not yet got going.</p>`;
-  h+=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:12px;color:var(--soft);">
+  r+=`<p class="means" style="margin:6px 0 0;">${opener} Read it from the foundation up. A bar marked solid is a skill you can already lean on. A bar that is taking shape is one that is starting to come together. A bar that is still building is one you have not yet got going.</p>`;
+  r+=`<div style="display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:12px;color:var(--soft);">
     <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#EF9F27;margin-right:5px;"></i>Support</span>
     <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#85B7EB;margin-right:5px;"></i>Developing</span>
     <span><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#97C459;margin-right:5px;"></i>Strength</span>
   </div>`;
-  h+=`<div style="padding:8px 0 14px;">`;
+  rows.push(r);
+
+  // one row per check-in in the summary chart
   SECTIONS.forEach((sec,si)=>{
     const f0 = sec.facets[0];
     const lv0 = levelOf(f0);
-    h+=`<div class="nobreak"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
-    h+=`<div class="frow"><span class="fname">${FN[f0]}</span>${trackHTML(lv0)}<span class="zw">${zoneWord(lv0)}</span></div>`;
-    h+=`</div>`;
+    const divcls = si===0 ? "nobreak" : "nobreak secdiv";
+    let sr=`<div class="${divcls}"><p class="floorlbl">${iconFor(si)}${sec.name}</p>`;
+    sr+=`<div class="frow"><span class="fname">${FN[f0]}</span>${trackHTML(lv0)}<span class="zw">${zoneWord(lv0)}</span></div>`;
+    sr+=`</div>`;
     sec.facets.slice(1).forEach(f=>{
       const lv=levelOf(f);
-      h+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>`;
+      sr+=`<div class="frow"><span class="fname">${FN[f]}</span>${trackHTML(lv)}<span class="zw">${zoneWord(lv)}</span></div>`;
     });
+    rows.push(sr);
   });
-  h+=`</div>`;
-  // section blocks (moved before Where to start)
-  h+=`<p class="banner" style="margin-top:26px;">Your results, skill by skill</p>`;
-  h+=`<p class="means" style="margin:6px 0 14px;">Now let's walk through each skill in more detail, one at a time, starting with the foundation.</p>`;
+
+  // 2. where to start (priorities), own row
+  rows.push(`<p class="banner" style="margin-top:6px;">2. Where to start</p><div class="plan">${actionPlan()}</div>`);
+
+  // 3. skill by skill intro, own row
+  rows.push(`<p class="banner" style="margin-top:6px;">3. Your results, skill by skill</p><p class="means" style="margin:6px 0 0;">Now let's walk through each skill in more detail, one at a time, starting with the foundation.</p>`);
+
+  // one row per check-in in the detailed walkthrough
   SECTIONS.forEach((sec,si)=>{
     const ordered = sec.facets.slice().sort((a,b)=>levelOf(b)-levelOf(a));
-    h+=`<div class="nobreak" style="margin-top:6px;"><p class="floorlbl">${iconFor(si)}${sec.name}</p>${facetBlock(ordered[0])}</div>`;
-    ordered.slice(1).forEach(f=>{ h+=facetBlock(f); });
+    const divcls = si===0 ? "nobreak" : "nobreak secdiv";
+    let sr=`<div class="${divcls}" style="margin-top:6px;"><p class="floorlbl">${iconFor(si)}${sec.name}</p>${facetBlock(ordered[0])}</div>`;
+    ordered.slice(1).forEach(f=>{ sr+=facetBlock(f); });
+    rows.push(sr);
   });
-  // action plan (now after the detailed walkthrough)
-  h+=`<p class="banner" style="margin-top:26px;">Where to start</p>`;
-  h+=`<div class="plan">${actionPlan()}</div>`;
-  // how it all fits together
-  h+=`<p class="banner" style="margin-top:26px;">How it all fits together</p>`;
-  h+=`<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">`;
-  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Exam readiness</p><p class="means" style="margin:0;">How you prepare for tests and exams is where everything else gets put to the test. Starting early and keeping your nerves in check lets you show what you know when it matters.</p></div>`;
-  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Learning and memory</p><p class="means" style="margin:0;">How you learn and remember decides how much of what you study stays with you afterwards. Working with the material, rather than just reading it over, is what moves it into memory you can use later.</p></div>`;
-  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Attention and focus</p><p class="means" style="margin:0;">How well you manage your attention and distractions decides whether your study time counts. An hour at your desk only helps you if your mind stays on the page, so dealing with what pulls you away is what makes that time worth something.</p></div>`;
-  h+=`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Goals and time</p><p class="means" style="margin:0;">Setting clear goals and planning your time give your effort a direction. A target tells you what you are working towards, and putting a plan on the calendar is what turns wanting to study into sitting down and studying.</p></div>`;
-  h+=`<div class="card nobreak" style="margin:0;padding:18px;border:1.5px solid var(--line2);"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Foundation</p><p class="means" style="margin:0;">Getting yourself started, staying with a task, and keeping your things in order make up your foundation. When these are solid, every other skill in this report becomes easier to use.</p></div>`;
-  h+=`</div>`;
-  h+=`<p class="means" style="margin:14px 0 0;">On its own, each area helps a little. Together, they are what studying well actually is, which is why they depend on each other. So a lower area is not a dead end. It is usually the thing that, once it lifts, helps everything else work better too.</p>`;
-  h+=`<p style="margin:24px 0 0; font-weight:700; font-size:16px; color:var(--green-dark);">All the best with your studies.</p>`;
-  h+=`<p class="printfoot">Study Toolkit Profile &middot; ${escapeHtml(fullName())} &middot; Confidential</p>`;
-  document.getElementById("learnerView").innerHTML=h;
+
+  // 4. how it all fits together, heading own row, then one row per card
+  rows.push(`<p class="banner" style="margin-top:6px;">4. How it all fits together</p>`);
+  rows.push(`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Exam readiness</p><p class="means" style="margin:0;">How you prepare for tests and exams is where everything else gets put to the test. Starting early and keeping your nerves in check lets you show what you know when it matters.</p></div>`);
+  rows.push(`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Learning and memory</p><p class="means" style="margin:0;">How you learn and remember decides how much of what you study stays with you afterwards. Working with the material, rather than just reading it over, is what moves it into memory you can use later.</p></div>`);
+  rows.push(`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Attention and focus</p><p class="means" style="margin:0;">How well you manage your attention and distractions decides whether your study time counts. An hour at your desk only helps you if your mind stays on the page, so dealing with what pulls you away is what makes that time worth something.</p></div>`);
+  rows.push(`<div class="card nobreak" style="margin:0;padding:16px 18px;"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Goals and time</p><p class="means" style="margin:0;">Setting clear goals and planning your time give your effort a direction. A target tells you what you are working towards, and putting a plan on the calendar is what turns wanting to study into sitting down and studying.</p></div>`);
+  rows.push(`<div class="card nobreak" style="margin:0;padding:18px;border:1.5px solid var(--line2);"><p style="font-weight:900;font-size:15px;margin:0 0 6px;">Foundation</p><p class="means" style="margin:0;">Getting yourself started, staying with a task, and keeping your things in order make up your foundation. When these are solid, every other skill in this report becomes easier to use.</p></div>`);
+  rows.push(`<p class="means" style="margin:0;">On its own, each area helps a little. Together, they are what studying well actually is, which is why they depend on each other. So a lower area is not a dead end. It is usually the thing that, once it lifts, helps everything else work better too.</p><p style="margin:14px 0 0; font-weight:700; font-size:16px; color:var(--green-dark);">All the best with your studies.</p>`);
+
+  const footerText = "Study Toolkit Profile · "+fullName()+" · "+fmtDate(meta.date);
+  let table=`<table class="pofoot-table"><thead><tr><th class="printhead">${escapeHtml(footerText)}</th></tr></thead><tbody>`;
+  rows.forEach(rr=>{ table+=`<tr><td style="padding:0;">${rr}</td></tr>`; });
+  table+=`</tbody></table>`;
+
+  document.getElementById("learnerView").innerHTML = pre+table;
 }
 function headerHTML2(){ if(!meta.first) return ""; return `<h2 style="margin:18px 0 0;">Study Toolkit Profile</h2>`; }
 function headerFieldsHTML(){ if(!meta.first) return "";
